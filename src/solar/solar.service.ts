@@ -1,38 +1,36 @@
-import { HttpService } from '@nestjs/axios';
+import axios from 'axios';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { lastValueFrom } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
-import { GoogleSheetsService } from 'src/google-sheets/google-sheets.service';
 
 @Injectable()
 export class SolarService {
   constructor(
-    private httpService: HttpService,
-    private googleSheetsService: GoogleSheetsService,
   ) {}
 
   async getSolarData(latitude: number, longitude: number): Promise<any> {
+    console.log({ receivedLatitude: latitude, receivedLongitude: longitude });
+    if (isNaN(latitude) || isNaN(longitude)) {
+      throw new HttpException('Invalid coordinates received', HttpStatus.BAD_REQUEST);
+    }
+    
     const apiKey = process.env.GOOGLE_API_KEY;
+    
     const url = `https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude=${latitude}&location.longitude=${longitude}&key=${apiKey}`;
-
+    
     try {
-      const response = await lastValueFrom(
-        this.httpService.get(url).pipe(
-          catchError((error) => {
-            throw new HttpException(
-              `Failed to fetch data from Solar API: ${error.message}`,
-              HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-          }),
-        ),
-      );
+      const response = await axios.get(url);
+      console.log('Response Data:', response.data);
       return response.data;
     } catch (error) {
-      throw new HttpException(
-        `An error occurred while fetching data: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error.response && error.response.status === 404) {
+        throw new HttpException('Location out of coverage', HttpStatus.BAD_REQUEST);
+      } else {
+        console.error('Error fetching data from API:', error.message);
+        throw new HttpException(
+          `An error occurred while fetching data: ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 
@@ -95,16 +93,10 @@ export class SolarService {
     );
 
     const savings = totalCostWithoutSolar - totalCostWithSolar;
-    // Escribir resultados en Google Sheets
-    const spreadsheetId = '1w96gpl-m2RiV0vTKuCSCFAE5iEeoSHeRbJkTRzmLDZs';
-    const range = 'Sheet1!A10';
-    const values = [
-      ['totalCostWithSolar', 'totalCostWithoutSolar', 'savings'],
-      [totalCostWithSolar, totalCostWithoutSolar, savings],
-    ];
-
-    // await this.googleSheetsService.writeSheet(spreadsheetId, range, values);
-    // await this.googleSheetsService.writeGoogleSheet()
+/*     Escribir resultados en Google Sheets
+ */
+    /* await this.googleSheetsService.writeSheet(spreadsheetId, range, values);
+    await this.googleSheetsService.writeGoogleSheet() */
     
    
     return {

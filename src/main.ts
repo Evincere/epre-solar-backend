@@ -2,14 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AllExceptionFilter } from './common/filters/http-exception.filter';
-import { TimeOutInterceptor } from './common/interceptors/timeout.interceptor';
+
 
 dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log', 'debug', 'verbose'] });
-
   const options = new DocumentBuilder()
     .setTitle('Solar API')
     .setDescription('Api para el cálculo de ahorro energético')
@@ -21,6 +19,13 @@ async function bootstrap() {
     swaggerOptions: {
       filter: true
     }
+  });
+
+  // Configurar CORS para permitir todas las solicitudes durante el desarrollo
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
   
   // app.useGlobalFilters(new AllExceptionFilter());
