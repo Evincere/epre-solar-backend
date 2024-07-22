@@ -1,25 +1,24 @@
 import axios from 'axios';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
+import { HttpService } from '@nestjs/axios';
+import { map } from 'rxjs';
 
 @Injectable()
 export class SolarService {
-  constructor(
+  constructor(private httpService: HttpService
   ) {}
 
   async getSolarData(latitude: number, longitude: number): Promise<any> {
-    console.log({ receivedLatitude: latitude, receivedLongitude: longitude });
     if (isNaN(latitude) || isNaN(longitude)) {
       throw new HttpException('Invalid coordinates received', HttpStatus.BAD_REQUEST);
     }
     
     const apiKey = process.env.GOOGLE_API_KEY;
-    
     const url = `https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude=${latitude}&location.longitude=${longitude}&key=${apiKey}`;
     
     try {
       const response = await axios.get(url);
-      console.log('Response Data:', response.data);
       return response.data;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -125,4 +124,6 @@ export class SolarService {
     }
     return -1;
   }
+
+  
 }

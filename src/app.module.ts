@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { SolarModule } from './solar/solar.module';
 import { AuthModule } from './auth/auth.module';
 import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
+import { GmailModule } from './gmail/gmail.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
       isGlobal: true,
     }),
     AuthModule,
-    GoogleSheetsModule
+    GoogleSheetsModule,
+    GmailModule
   ],
   controllers: [],
   providers: [],

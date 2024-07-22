@@ -3,11 +3,13 @@ import { SolarService } from './solar.service';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CoordenadasDTO } from './dto/coordenadas.dto';
+import { GoogleSheetsService } from 'src/google-sheets/google-sheets.service';
+import { log } from 'console';
 
 @ApiTags('solar')
 @Controller('solar')
 export class SolarController {
-  constructor(private readonly solarService: SolarService) {}
+  constructor(private readonly solarService: SolarService, private readonly googleSheetsService: GoogleSheetsService) {}
 
   @Post('calcular')
   async calcularConGoogleApi(@Body() coordenadas: any[]): Promise<any> {
@@ -15,16 +17,7 @@ export class SolarController {
     const centroid = this.calculateCentroid(coordenadas);
     // Obtener datos reales de la API solar de Google basados en el centroide
     const solarData = await this.solarService.getSolarData(centroid.latitude, centroid.longitude);
-    
-    /* const datosCalculados: SolarCalculationDto = {
-      monthlyAverageEnergyBill: solarData.monthlyAverageEnergyBill || 150,
-      energyCostPerKwh: solarData.energyCostPerKwh || 0.15,
-      panelsCount: solarData.panelsCount || 20,
-      panelCapacityWatts: solarData.panelCapacityWatts || 350,
-      installationCostPerWatt: solarData.installationCostPerWatt || 3.5,
-      solarIncentives: solarData.solarIncentives || 1000,
-    }; */
-    
+    await this.googleSheetsService.cargarDatosSolarApi(solarData);
     return solarData;
   }
 
@@ -60,4 +53,14 @@ export class SolarController {
   ) {
     return this.solarService.calculateSolarSavings(solarCalculationDto);
   }
+
+
+  @Get("solarData")
+  async getSolarData(@Query('latitude') latitude: number, @Query('longitude') longitude: number) {
+    return this.solarService.getSolarData(latitude, longitude);
+  }
+
+  
+
+
 }
