@@ -6,6 +6,6 @@ export class SolarCalculationDto {
     @ApiProperty()
     annualConsumption: number;
     @ApiProperty()
-    coordenadas: CoordenadasDTO;
+    coordenadas: any[];
   }
   

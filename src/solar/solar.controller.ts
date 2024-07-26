@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Options, Post, Query } from '@nestjs/common';
 import { SolarService } from './solar.service';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GoogleSheetsService } from 'src/google-sheets/google-sheets.service';
+import { Observable } from 'rxjs';
 
 @ApiTags('solar')
 @Controller('solar')
@@ -48,7 +49,8 @@ export class SolarController {
   })
   async calculateSolarSavings(
     @Body() solarCalculationDto: SolarCalculationDto,
-  ) {
+  ): Promise<any> {
+    
     return await this.solarService.calculateSolarSavings(solarCalculationDto);
   }
 
@@ -58,7 +60,11 @@ export class SolarController {
     return this.solarService.getSolarData(latitude, longitude);
   }
 
-  
+  @Options('calcular')
+  handleOptions() {
+    // Respuesta vacía para la solicitud OPTIONS
+    return;
+  }
 
 
 }

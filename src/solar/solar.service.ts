@@ -46,9 +46,12 @@ export class SolarService {
   async calculateSolarSavings(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
+    
+    const {latitude, longitude} = this.calculateCentroid(solarCalculationDto.coordenadas);
+
     const solarDataApi = await this.getSolarData(
-      solarCalculationDto.coordenadas.latitude,
-      solarCalculationDto.coordenadas.longitude,
+      latitude,
+      longitude,
     );
     const solarData: SolarData = {
       yearlyEnergyDcKwh: solarDataApi.solarPotential.solarPanelConfigs[1].yearlyEnergyDcKwh,
@@ -60,9 +63,33 @@ export class SolarService {
       carbonOffsetFactorKgPerMWh: solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
       tarifaCategory: TarifaCategoria.T1_G1,
     }
+    
     return await this.calculadoraService.calculateEnergySavings(
       solarCalculationDto.annualConsumption,
       solarData,
     );
+  }
+
+  // Método para calcular el centroide de una superficie
+  private calculateCentroid(coordenadas: any[]): { latitude: number; longitude: number } {
+    let sumLat = 0;
+    let sumLng = 0;
+
+    for (const coord of coordenadas) {
+      const lat = parseFloat(coord.lat);
+      const lng = parseFloat(coord.lng);
+      
+      if (!isNaN(lat) && !isNaN(lng)) {
+        sumLat += lat;
+        sumLng += lng;
+      } else {
+        console.error(`Invalid coordinate found: ${coord.latitude}, ${coord.longitude}`);
+      }
+    }
+
+    const centroidLat = sumLat / coordenadas.length;
+    const centroidLng = sumLng / coordenadas.length;
+    
+    return { latitude: centroidLat, longitude: centroidLng };
   }
 }

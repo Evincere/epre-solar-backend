@@ -8,6 +8,14 @@ dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log', 'debug', 'verbose'] });
+
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type',
+    credentials: true,
+  });
+
   const options = new DocumentBuilder()
     .setTitle('Solar API')
     .setDescription('Api para el cálculo de ahorro energético')
@@ -20,14 +28,6 @@ async function bootstrap() {
       filter: true
     }
   });
-
-  // Configurar CORS para permitir todas las solicitudes durante el desarrollo
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept, Authorization',
-  });
-  
   // app.useGlobalFilters(new AllExceptionFilter());
   // app.useGlobalInterceptors(new TimeOutInterceptor());
   await app.listen(process.env.PORT || 3000);
