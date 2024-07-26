@@ -2,9 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { SolarService } from './solar.service';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CoordenadasDTO } from './dto/coordenadas.dto';
 import { GoogleSheetsService } from 'src/google-sheets/google-sheets.service';
-import { log } from 'console';
 
 @ApiTags('solar')
 @Controller('solar')
@@ -17,7 +15,7 @@ export class SolarController {
     const centroid = this.calculateCentroid(coordenadas);
     // Obtener datos reales de la API solar de Google basados en el centroide
     const solarData = await this.solarService.getSolarData(centroid.latitude, centroid.longitude);
-    await this.googleSheetsService.cargarDatosSolarApi(solarData);
+    // await this.googleSheetsService.cargarDatosSolarApi(solarData);
     return solarData;
   }
 
@@ -51,7 +49,7 @@ export class SolarController {
   async calculateSolarSavings(
     @Body() solarCalculationDto: SolarCalculationDto,
   ) {
-    return this.solarService.calculateSolarSavings(solarCalculationDto);
+    return await this.solarService.calculateSolarSavings(solarCalculationDto);
   }
 
 

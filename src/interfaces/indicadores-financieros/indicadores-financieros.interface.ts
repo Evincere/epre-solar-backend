@@ -1,4 +1,4 @@
-export interface IndicadorFinanciero {
+export interface IndicadoresFinancieros {
   'VAN$': number;
   'TIR%': number;
   payBackSimpleYears: number;

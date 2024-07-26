@@ -1,18 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { CoordenadasDTO } from "./coordenadas.dto";
 
 // src/solar/dto/solar-calculation.dto.ts
 export class SolarCalculationDto {
     @ApiProperty()
-    monthlyAverageEnergyBill: number;
+    annualConsumption: number;
     @ApiProperty()
-    energyCostPerKwh: number;
-    @ApiProperty()
-    panelsCount: number;
-    @ApiProperty()
-    panelCapacityWatts: number;
-    @ApiProperty()
-    installationCostPerWatt: number;
-    @ApiProperty()
-    solarIncentives: number;
+    coordenadas: CoordenadasDTO;
   }
   
