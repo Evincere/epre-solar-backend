@@ -63,8 +63,8 @@ export class Resultados {
 
   private generarIndicadoresFinancieros(): void {
     this.indicadoresFinancieros = {
-      VAN$: this.calcularNPV(),
-      'TIR%': this.calcularTIR(),
+      VAN: this.calcularNPV(),
+      TIR: this.calcularTIR(),
       payBackSimpleYears: this.calcularPlazoRetorno(),
     };
   }

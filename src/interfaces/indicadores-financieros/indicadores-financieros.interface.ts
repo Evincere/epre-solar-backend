@@ -1,5 +1,5 @@
 export interface IndicadoresFinancieros {
-  'VAN$': number;
-  'TIR%': number;
+  'VAN': number;
+  'TIR': number;
   payBackSimpleYears: number;
 }
