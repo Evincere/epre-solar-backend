@@ -16,7 +16,7 @@ export class CalculadoraService {
     
   }
   // Método principal para calcular el ahorro energético
-  calculateEnergySavings(annualConsumption: number, solarData: SolarData): any {
+  calculateEnergySavings(solarData: SolarData): any {
     // Obtener datos del API de Solar
     const dcAcFactor: number = 0.85;
     const yearlyEnergyACKwh: number = solarData.yearlyEnergyDcKwh * dcAcFactor;
@@ -26,7 +26,7 @@ export class CalculadoraService {
     const geiEmitionFactorTCo2Mwh: number =
       solarData.carbonOffsetFactorKgPerMWh / 1000;
     const tarifaCategory: Tarifa = new Tarifa(solarData.tarifaCategory);
-
+    const annualConsumption = solarData.annualConsumption;
     const periodoVeinteanalGeneracionFotovoltaica =
       this.datosTecnicos.getGeneracionFotovoltaica(annualConsumption, yearlyEnergyACKwh);
 
@@ -51,6 +51,7 @@ export class CalculadoraService {
       this.resultados = new Resultados(periodoVeinteanalFlujoIngresosMonetarios, periodoVeinteanalEmisionesGEIEvitadas);
 
     return {
+      solarData,
       periodoVeinteanalGeneracionFotovoltaica,
       periodoVeinteanalFlujoEnergia,
       periodoVeinteanalFlujoIngresosMonetarios,

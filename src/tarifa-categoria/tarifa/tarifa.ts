@@ -25,7 +25,7 @@ export class Tarifa {
     this.categoria = categoria;
     this.potenciaMaximaContratadaKw = potenciaMaximaContratadaKw;
 
-    const cargos = Tarifa.cargosPorCategoria[categoria];
+    const cargos = Tarifa.cargosPorCategoria[categoria] ||  { consumo: 77.51, inyeccion: 54.22 }; // todo: determinar que hacer caso sin categoria
     this.cargoVariableConsumoArs = cargos.consumo;
     this.cargoVariableInyeccionArs = cargos.inyeccion;
   }

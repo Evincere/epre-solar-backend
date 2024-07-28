@@ -9,7 +9,7 @@ export class Resultados {
   private _casoConCapitalPropio: ResultadosCapitalPropio[];
   private _indicadoresFinancieros: IndicadoresFinancieros;
   private _emisionesGEIEvitadas: EmisionesGeiEvitadas[];
-
+  
   constructor(
     periodoVeinteanalFlujoIngresosMonetarios: FlujoIngresosMonetarios[],
     periodoVeinteanalEmisionesGEIEvitadas: EmisionesGeiEvitadas[],
@@ -109,12 +109,12 @@ export class Resultados {
   }
 
   private calcularPlazoRetorno(): number {
-    this.casoConCapitalPropio.forEach((resultado, i) => {
-      if (resultado.flujoAcumulado > 0) {
-        return i + 1;
+    for (let i = 0; i < this.casoConCapitalPropio.length; i++) {
+      if (this.casoConCapitalPropio[i].flujoAcumulado > 0) {
+        return i + 1; 
       }
-    });
-    return -1;
+    }
+    return -1; 
   }
 
   public get casoConCapitalPropio(): ResultadosCapitalPropio[] {

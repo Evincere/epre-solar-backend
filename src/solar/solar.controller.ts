@@ -2,15 +2,14 @@ import { Body, Controller, Get, Options, Post, Query } from '@nestjs/common';
 import { SolarService } from './solar.service';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { GoogleSheetsService } from 'src/google-sheets/google-sheets.service';
-import { Observable } from 'rxjs';
+import { ResultadosDto } from 'src/interfaces/resultados-dto/resultados-dto.interface';
 
 @ApiTags('solar')
 @Controller('solar')
 export class SolarController {
-  constructor(private readonly solarService: SolarService, private readonly googleSheetsService: GoogleSheetsService) {}
+  constructor(private readonly solarService: SolarService) {}
 
-  @Post('calcular')
+  /* @Post('calcular')
   async calcularConGoogleApi(@Body() coordenadas: any[]): Promise<any> {
     // Calcula el centroide de la superficie para obtener una ubicación aproximada
     const centroid = this.calculateCentroid(coordenadas);
@@ -41,7 +40,7 @@ export class SolarController {
     const centroidLng = sumLng / coordenadas.length;
     
     return { latitude: centroidLat, longitude: centroidLng };
-  }
+  } */
 
   @Post('calculate')
   @ApiOperation({
@@ -49,8 +48,7 @@ export class SolarController {
   })
   async calculateSolarSavings(
     @Body() solarCalculationDto: SolarCalculationDto,
-  ): Promise<any> {
-    
+  ): Promise<ResultadosDto> {
     return await this.solarService.calculateSolarSavings(solarCalculationDto);
   }
 

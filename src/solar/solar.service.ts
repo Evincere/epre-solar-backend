@@ -5,11 +5,11 @@ import { HttpService } from '@nestjs/axios';
 import { CalculadoraService } from 'src/calculadora/calculadora.service';
 import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
 import { TarifaCategoria } from 'src/tarifa-categoria/tarifa-categoria-enum';
+import { PanelConfig } from 'src/interfaces/panel-config/panel-config.interface';
 
 @Injectable()
 export class SolarService {
   constructor(
-    private readonly httpService: HttpService,
     private readonly calculadoraService: CalculadoraService,
   ) {}
 
@@ -46,50 +46,79 @@ export class SolarService {
   async calculateSolarSavings(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
-    
-    const {latitude, longitude} = this.calculateCentroid(solarCalculationDto.coordenadas);
+    const { latitude, longitude } = this.calculateCentroid(
+      solarCalculationDto.coordenadas,
+    );
 
-    const solarDataApi = await this.getSolarData(
-      latitude,
-      longitude,
+    const solarDataApi = await this.getSolarData(latitude, longitude);
+    const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
+      solarCalculationDto.annualConsumption,
+      solarDataApi.solarPotential,
     );
     const solarData: SolarData = {
-      yearlyEnergyDcKwh: solarDataApi.solarPotential.solarPanelConfigs[1].yearlyEnergyDcKwh,
+      annualConsumption: solarCalculationDto.annualConsumption,
+      yearlyEnergyDcKwh: solarPanelConfig.yearlyEnergyDcKwh,
       panels: {
-          panelsCount: solarDataApi.solarPotential.solarPanelConfigs[1].panelsCount,
-          panelCapacityW: solarDataApi.solarPotential.panelCapacityWatts
-
+        panelsCount: solarPanelConfig.panelsCount,
+        panelCapacityW: solarDataApi.solarPotential.panelCapacityWatts,
+        panelSize: {
+          height: solarDataApi.solarPotential.panelHeightMeters,
+          width: solarDataApi.solarPotential.panelWidthMeters,
+        },
       },
-      carbonOffsetFactorKgPerMWh: solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
-      tarifaCategory: TarifaCategoria.T1_G1,
-    }
-    
+      carbonOffsetFactorKgPerMWh:
+        solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
+      tarifaCategory: solarCalculationDto.categoriaSeleccionada,
+    };
+
     return await this.calculadoraService.calculateEnergySavings(
-      solarCalculationDto.annualConsumption,
       solarData,
     );
   }
 
   // Método para calcular el centroide de una superficie
-  private calculateCentroid(coordenadas: any[]): { latitude: number; longitude: number } {
+  private calculateCentroid(coordenadas: any[]): {
+    latitude: number;
+    longitude: number;
+  } {
     let sumLat = 0;
     let sumLng = 0;
 
     for (const coord of coordenadas) {
       const lat = parseFloat(coord.lat);
       const lng = parseFloat(coord.lng);
-      
+
       if (!isNaN(lat) && !isNaN(lng)) {
         sumLat += lat;
         sumLng += lng;
       } else {
-        console.error(`Invalid coordinate found: ${coord.latitude}, ${coord.longitude}`);
+        console.error(
+          `Invalid coordinate found: ${coord.latitude}, ${coord.longitude}`,
+        );
       }
     }
 
     const centroidLat = sumLat / coordenadas.length;
     const centroidLng = sumLng / coordenadas.length;
-    
+
     return { latitude: centroidLat, longitude: centroidLng };
+  }
+
+  private calculatePanelConfig(annualConsumption, solarPotential): PanelConfig {
+    const configs = solarPotential.solarPanelConfigs;
+    // Encuentra el índice del primer elemento que cumple con la condición
+    const index = configs.findIndex(
+      (element: PanelConfig) => element.yearlyEnergyDcKwh > annualConsumption,
+    );
+    // Si no se encuentra ningún elemento que cumpla con la condición, devuelve null
+    if (index === -1) {
+      return configs[configs.length - 1];
+    }
+    // Si el índice es 0, no hay un elemento anterior
+    if (index === 0) {
+      return configs[0];
+    }
+    // Devuelve el elemento inmediato anterior al que cumple con la condición
+    return configs[index - 1];
   }
 }
