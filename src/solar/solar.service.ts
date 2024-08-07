@@ -1,10 +1,8 @@
 import axios from 'axios';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { SolarCalculationDto } from './dto/solar-calculation.dto';
-import { HttpService } from '@nestjs/axios';
 import { CalculadoraService } from 'src/calculadora/calculadora.service';
 import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
-import { TarifaCategoria } from 'src/tarifa-categoria/tarifa-categoria-enum';
 import { PanelConfig } from 'src/interfaces/panel-config/panel-config.interface';
 
 @Injectable()
@@ -46,14 +44,18 @@ export class SolarService {
   async calculateSolarSavings(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
+
     const { latitude, longitude } = this.calculateCentroid(
-      solarCalculationDto.coordenadas,
+      solarCalculationDto.polygonCoordinates,
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
+    console.log("1 ",solarDataApi.solarPotential.solarPanelConfigs);
+    
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarCalculationDto.annualConsumption,
       solarDataApi.solarPotential,
+      solarCalculationDto.panelsSupported
     );
     const solarData: SolarData = {
       annualConsumption: solarCalculationDto.annualConsumption,
@@ -65,12 +67,14 @@ export class SolarService {
           height: solarDataApi.solarPotential.panelHeightMeters,
           width: solarDataApi.solarPotential.panelWidthMeters,
         },
+        maxPanelsCount: 87
       },
       carbonOffsetFactorKgPerMWh:
         solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
       tarifaCategory: solarCalculationDto.categoriaSeleccionada,
     };
-
+    
+    
     return await this.calculadoraService.calculateEnergySavings(
       solarData,
     );
@@ -104,11 +108,12 @@ export class SolarService {
     return { latitude: centroidLat, longitude: centroidLng };
   }
 
-  private calculatePanelConfig(annualConsumption, solarPotential): PanelConfig {
+  private calculatePanelConfig(annualConsumption, solarPotential, panelsSupported): PanelConfig {
     const configs = solarPotential.solarPanelConfigs;
+    
     // Encuentra el índice del primer elemento que cumple con la condición
     const index = configs.findIndex(
-      (element: PanelConfig) => element.yearlyEnergyDcKwh > annualConsumption,
+      (element: PanelConfig) => element.panelsCount == panelsSupported,
     );
     // Si no se encuentra ningún elemento que cumpla con la condición, devuelve null
     if (index === -1) {

@@ -13,7 +13,6 @@ export class CalculadoraService {
   constructor() {
     this.datosTecnicos = new DatosTecnicos();
     this.ecoFin = new EcoFin();
-    
   }
   // Método principal para calcular el ahorro energético
   calculateEnergySavings(solarData: SolarData): any {
@@ -28,12 +27,15 @@ export class CalculadoraService {
     const tarifaCategory: Tarifa = new Tarifa(solarData.tarifaCategory);
     const annualConsumption = solarData.annualConsumption;
     const periodoVeinteanalGeneracionFotovoltaica =
-      this.datosTecnicos.getGeneracionFotovoltaica(annualConsumption, yearlyEnergyACKwh);
+      this.datosTecnicos.getGeneracionFotovoltaica(
+        annualConsumption,
+        yearlyEnergyACKwh,
+      );
 
     const periodoVeinteanalFlujoEnergia = this.datosTecnicos.getFlujoEnergia(
       annualConsumption,
       yearlyEnergyACKwh,
-      periodoVeinteanalGeneracionFotovoltaica
+      periodoVeinteanalGeneracionFotovoltaica,
     );
 
     const periodoVeinteanalEmisionesGEIEvitadas =
@@ -48,15 +50,18 @@ export class CalculadoraService {
         tarifaCategory.cargoVariableInyeccionArs,
       );
 
-      this.resultados = new Resultados(periodoVeinteanalFlujoIngresosMonetarios, periodoVeinteanalEmisionesGEIEvitadas);
-
+    this.resultados = new Resultados(
+      periodoVeinteanalFlujoIngresosMonetarios,
+      periodoVeinteanalEmisionesGEIEvitadas,
+    );
+    
     return {
       solarData,
       periodoVeinteanalGeneracionFotovoltaica,
       periodoVeinteanalFlujoEnergia,
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
-      resultados: this.resultados
+      resultados: this.resultados,
     };
   }
 }

@@ -7,10 +7,12 @@ export class SolarCalculationDto {
     @ApiProperty()
     annualConsumption: number;
     @ApiProperty()
-    coordenadas: any[];
+    polygonCoordinates: any[];
     @ApiProperty()
     categoriaSeleccionada: TarifaCategoria;
     @ApiProperty()
-    selectedAreaM2: number;
+    polygonArea: number;
+    @ApiProperty()
+    panelsSupported: number;
   }
   

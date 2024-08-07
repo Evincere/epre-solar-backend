@@ -5,11 +5,12 @@ export interface SolarData {
     yearlyEnergyDcKwh: number,
     panels: {
         panelsCount: number,
-        panelCapacityW: number
+        panelCapacityW: number,
         panelSize: {
             height: number,
             width: number
-        }
+        },
+        maxPanelsCount: number,
     }
     carbonOffsetFactorKgPerMWh: number,
     tarifaCategory: TarifaCategoria,
