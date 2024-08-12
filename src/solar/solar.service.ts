@@ -7,9 +7,7 @@ import { PanelConfig } from 'src/interfaces/panel-config/panel-config.interface'
 
 @Injectable()
 export class SolarService {
-  constructor(
-    private readonly calculadoraService: CalculadoraService,
-  ) {}
+  constructor(private readonly calculadoraService: CalculadoraService) {}
 
   async getSolarData(latitude: number, longitude: number): Promise<any> {
     if (isNaN(latitude) || isNaN(longitude)) {
@@ -44,40 +42,36 @@ export class SolarService {
   async calculateSolarSavings(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
-
+    
     const { latitude, longitude } = this.calculateCentroid(
       solarCalculationDto.polygonCoordinates,
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
-    console.log("1 ",solarDataApi.solarPotential.solarPanelConfigs);
-    
+
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
-      solarCalculationDto.annualConsumption,
       solarDataApi.solarPotential,
-      solarCalculationDto.panelsSupported
+      solarCalculationDto.panelsSupported,
     );
     const solarData: SolarData = {
       annualConsumption: solarCalculationDto.annualConsumption,
       yearlyEnergyDcKwh: solarPanelConfig.yearlyEnergyDcKwh,
       panels: {
-        panelsCount: solarPanelConfig.panelsCount,
+        panelsCountApi: solarPanelConfig.panelsCount,
+        maxPanelsPerSuperface: solarCalculationDto.panelsSupported,
         panelCapacityW: solarDataApi.solarPotential.panelCapacityWatts,
         panelSize: {
           height: solarDataApi.solarPotential.panelHeightMeters,
           width: solarDataApi.solarPotential.panelWidthMeters,
         },
-        maxPanelsCount: 87
+        
       },
       carbonOffsetFactorKgPerMWh:
         solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
       tarifaCategory: solarCalculationDto.categoriaSeleccionada,
     };
-    
-    
-    return await this.calculadoraService.calculateEnergySavings(
-      solarData,
-    );
+
+    return await this.calculadoraService.calculateEnergySavings(solarData);
   }
 
   // Método para calcular el centroide de una superficie
@@ -108,22 +102,24 @@ export class SolarService {
     return { latitude: centroidLat, longitude: centroidLng };
   }
 
-  private calculatePanelConfig(annualConsumption, solarPotential, panelsSupported): PanelConfig {
-    const configs = solarPotential.solarPanelConfigs;
+  private calculatePanelConfig(
+    solarPotential: { solarPanelConfigs: any; },
+    panelsSupported: number,
+  ): PanelConfig {
     
-    // Encuentra el índice del primer elemento que cumple con la condición
+    const configs = solarPotential.solarPanelConfigs;
     const index = configs.findIndex(
-      (element: PanelConfig) => element.panelsCount == panelsSupported,
+      (element: PanelConfig) => element.panelsCount === panelsSupported,
     );
     // Si no se encuentra ningún elemento que cumpla con la condición, devuelve null
     if (index === -1) {
       return configs[configs.length - 1];
     }
-    // Si el índice es 0, no hay un elemento anterior
+    
     if (index === 0) {
       return configs[0];
     }
-    // Devuelve el elemento inmediato anterior al que cumple con la condición
-    return configs[index - 1];
+    
+    return configs[index];
   }
 }

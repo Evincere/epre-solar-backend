@@ -9,7 +9,7 @@ import { Resultados } from './resultados/resultados';
 export class CalculadoraService {
   private datosTecnicos: DatosTecnicos;
   private ecoFin: EcoFin;
-  private resultados: Resultados;
+  private resultadosFinancieros: Resultados;
   constructor() {
     this.datosTecnicos = new DatosTecnicos();
     this.ecoFin = new EcoFin();
@@ -19,7 +19,9 @@ export class CalculadoraService {
     // Obtener datos del API de Solar
     const dcAcFactor: number = 0.85;
     const yearlyEnergyACKwh: number = solarData.yearlyEnergyDcKwh * dcAcFactor;
-    const panelsCount: number = solarData.panels.panelsCount;
+    console.log({solarData});
+    
+    const panelsCount: number = solarData.panels.panelsCountApi;
     const panelCapacityW: number = solarData.panels.panelCapacityW;
     const panelsSizeInstalationWp: number = panelsCount * panelCapacityW;
     const geiEmitionFactorTCo2Mwh: number =
@@ -28,7 +30,6 @@ export class CalculadoraService {
     const annualConsumption = solarData.annualConsumption;
     const periodoVeinteanalGeneracionFotovoltaica =
       this.datosTecnicos.getGeneracionFotovoltaica(
-        annualConsumption,
         yearlyEnergyACKwh,
       );
 
@@ -42,15 +43,21 @@ export class CalculadoraService {
       this.datosTecnicos.getEmisionesGEIEvitadas(
         periodoVeinteanalGeneracionFotovoltaica,
       );
+    
+    const periodoVeinteanalProyeccionTarifas = 
+      this.ecoFin.getProyeccionDeTarifas(
+        tarifaCategory.tarifaConsumoEnergiaArs,
+        tarifaCategory.tarifaInyeccionEnergiaArs,
+      )
 
     const periodoVeinteanalFlujoIngresosMonetarios =
       this.ecoFin.getFlujoIngresosMonetarios(
         periodoVeinteanalFlujoEnergia,
-        tarifaCategory.cargoVariableConsumoArs,
-        tarifaCategory.cargoVariableInyeccionArs,
+        tarifaCategory.tarifaConsumoEnergiaArs,
+        tarifaCategory.tarifaInyeccionEnergiaArs,
       );
 
-    this.resultados = new Resultados(
+    this.resultadosFinancieros = new Resultados(
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
     );
@@ -61,7 +68,11 @@ export class CalculadoraService {
       periodoVeinteanalFlujoEnergia,
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
-      resultados: this.resultados,
+      periodoVeinteanalProyeccionTarifas,
+      resultadosFinancieros : {
+        casoConCapitalPropio: this.resultadosFinancieros.casoConCapitalPropio,
+        indicadoresFinancieros: this.resultadosFinancieros.indicadoresFinancieros,
+      }
     };
   }
 }

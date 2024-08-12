@@ -3,8 +3,8 @@ import { TarifaCategoria } from '../tarifa-categoria-enum';
 export class Tarifa {
   categoria: TarifaCategoria;
   potenciaMaximaContratadaKw?: number;
-  cargoVariableConsumoArs: number;
-  cargoVariableInyeccionArs: number;
+  tarifaConsumoEnergiaArs: number;
+  tarifaInyeccionEnergiaArs: number;
 
   private static readonly cargosPorCategoria: { [key in TarifaCategoria]: { consumo: number, inyeccion: number } } = {
     [TarifaCategoria.T1_G1]: { consumo: 77.51, inyeccion: 54.22 },
@@ -23,10 +23,10 @@ export class Tarifa {
 
   constructor(categoria: TarifaCategoria, potenciaMaximaContratadaKw?: number) {
     this.categoria = categoria;
-    this.potenciaMaximaContratadaKw = potenciaMaximaContratadaKw;
+    this.potenciaMaximaContratadaKw = potenciaMaximaContratadaKw ?? 0;
 
     const cargos = Tarifa.cargosPorCategoria[categoria] ||  { consumo: 77.51, inyeccion: 54.22 }; // todo: determinar que hacer caso sin categoria
-    this.cargoVariableConsumoArs = cargos.consumo;
-    this.cargoVariableInyeccionArs = cargos.inyeccion;
+    this.tarifaConsumoEnergiaArs = cargos.consumo;
+    this.tarifaInyeccionEnergiaArs = cargos.inyeccion;
   }
 }

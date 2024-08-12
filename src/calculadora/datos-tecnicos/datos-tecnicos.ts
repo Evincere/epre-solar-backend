@@ -3,20 +3,18 @@ import { FlujoEnergia } from './flujo-energia/flujo-energia';
 import { EmisionesGeiEvitadas } from 'src/interfaces/emisiones-gei-evitadas/emisiones-gei-evitadas.interface';
 
 export class DatosTecnicos {
-  private readonly eficienciaInstalacion: number = 0.8;
+  private readonly eficienciaInstalacion: number = 0.85;
   private readonly degradacionAnualPaneles: number = 0.004;
   private readonly factorEmisiontCO2perMWh: number = 0.397;
-  private proporcionAutoconsumo: number;
-  private proporcionInyeccion: number;
+  private proporcionAutoconsumo: number = 0.8;
+  private proporcionInyeccion: number = 1 - this.proporcionAutoconsumo;;
   private readonly actualYear: number = new Date().getFullYear();
 
   public getGeneracionFotovoltaica(
-    annualConsumption: number,
     yearlyEnergyACkWh: number,
   ): GeneracionFotovoltaica[] {
     const periodoVeinteanal: GeneracionFotovoltaica[] = [];
-    this.proporcionAutoconsumo = annualConsumption/yearlyEnergyACkWh;
-    this.proporcionInyeccion = 1 - this.proporcionAutoconsumo;
+    
     // Generación del primer año
     periodoVeinteanal.push({
       anio: this.actualYear + 1,
@@ -47,25 +45,25 @@ export class DatosTecnicos {
     // Generación del primer año
     periodoVeinteanal.push(
       new FlujoEnergia(
-        annualConsumption,
-        yearlyEnergyACkWh - annualConsumption,
         periodoVeinteanalGeneracionFotovoltaica[0].anio,
+        annualConsumption,
+        periodoVeinteanalGeneracionFotovoltaica[0].generacionFotovoltaicaKWh,
+        this.proporcionAutoconsumo,
+        this.proporcionInyeccion
       ),
     );
 
     // Generación de los siguientes 19 años
     for (let i = 1; i < 20; i++) {
-      const degradedAutoconsumida =
-      periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh * this.proporcionAutoconsumo;
-      
-      const degradedInyectada =
-      periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh * this.proporcionInyeccion;
+      const currentYear: number = periodoVeinteanalGeneracionFotovoltaica[i].anio
 
       periodoVeinteanal.push(
         new FlujoEnergia(
-          degradedAutoconsumida,
-          degradedInyectada,
-          periodoVeinteanalGeneracionFotovoltaica[i].anio,
+          currentYear,
+          annualConsumption,
+          periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh,
+          this.proporcionAutoconsumo,
+          this.proporcionInyeccion,
         ),
       );
     }

@@ -9,7 +9,7 @@ export class Resultados {
   private _casoConCapitalPropio: ResultadosCapitalPropio[];
   private _indicadoresFinancieros: IndicadoresFinancieros;
   private _emisionesGEIEvitadas: EmisionesGeiEvitadas[];
-  
+
   constructor(
     periodoVeinteanalFlujoIngresosMonetarios: FlujoIngresosMonetarios[],
     periodoVeinteanalEmisionesGEIEvitadas: EmisionesGeiEvitadas[],
@@ -31,19 +31,25 @@ export class Resultados {
       flujoIngresos: 0,
       flujoEgresos: 0,
       inversiones: EcoFin.costoInversionUsd,
-      flujoFondos:
-        0 - 0 - EcoFin.costoInversionUsd,
+      flujoFondos: 0 - 0 - EcoFin.costoInversionUsd,
       flujoAcumulado: 0 - 0 - EcoFin.costoInversionUsd,
     });
 
     for (let i = 1; i < 20; i++) {
       const year = periodoVeinteanalFlujoIngresosMonetarios[i - 1].year;
+      
       const currentFlujoIngresos =
         periodoVeinteanalFlujoIngresosMonetarios[i - 1]
           .ahorroEnElectricidadTotalUsd +
-        periodoVeinteanalFlujoIngresosMonetarios[i - 1].ingresoPorInyeccionElectricaUsd;
-      const currentFlujoEgresos = EcoFin.costoMantenimientoUsd;
+        periodoVeinteanalFlujoIngresosMonetarios[i - 1]
+          .ingresoPorInyeccionElectricaUsd;
+
+      const currentFlujoEgresos =
+        periodoVeinteanal[i - 1].flujoEgresos +
+        EcoFin.costoMantenimientoUsd * 0.05;
+      
       const inversiones = 0;
+      
       const currentFlujoFondos =
         currentFlujoIngresos - currentFlujoEgresos - inversiones;
       const currentFlujoAcumulado =
@@ -111,10 +117,10 @@ export class Resultados {
   private calcularPlazoRetorno(): number {
     for (let i = 0; i < this.casoConCapitalPropio.length; i++) {
       if (this.casoConCapitalPropio[i].flujoAcumulado > 0) {
-        return i + 1; 
+        return i + 1;
       }
     }
-    return -1; 
+    return -1;
   }
 
   public get casoConCapitalPropio(): ResultadosCapitalPropio[] {

@@ -4,13 +4,14 @@ export interface SolarData {
     annualConsumption: number,
     yearlyEnergyDcKwh: number,
     panels: {
-        panelsCount: number,
+        panelsCountApi: number,
+        maxPanelsPerSuperface: number,
         panelCapacityW: number,
         panelSize: {
             height: number,
             width: number
         },
-        maxPanelsCount: number,
+        
     }
     carbonOffsetFactorKgPerMWh: number,
     tarifaCategory: TarifaCategoria,
