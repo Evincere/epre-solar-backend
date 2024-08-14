@@ -48,14 +48,13 @@ export class SolarService {
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
-
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,
       solarCalculationDto.panelsSupported,
     );
     const solarData: SolarData = {
       annualConsumption: solarCalculationDto.annualConsumption,
-      yearlyEnergyDcKwh: solarPanelConfig.yearlyEnergyDcKwh,
+      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.85,
       panels: {
         panelsCountApi: solarPanelConfig.panelsCount,
         maxPanelsPerSuperface: solarCalculationDto.panelsSupported,

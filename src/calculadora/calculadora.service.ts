@@ -17,10 +17,7 @@ export class CalculadoraService {
   // Método principal para calcular el ahorro energético
   calculateEnergySavings(solarData: SolarData): any {
     // Obtener datos del API de Solar
-    const dcAcFactor: number = 0.85;
-    const yearlyEnergyACKwh: number = solarData.yearlyEnergyDcKwh * dcAcFactor;
-    console.log({solarData});
-    
+    const yearlyEnergyACKwh: number = solarData.yearlyEnergyAcKwh;
     const panelsCount: number = solarData.panels.panelsCountApi;
     const panelCapacityW: number = solarData.panels.panelCapacityW;
     const panelsSizeInstalationWp: number = panelsCount * panelCapacityW;
