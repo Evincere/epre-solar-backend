@@ -105,7 +105,9 @@ export class SolarService {
     solarPotential: { solarPanelConfigs: any; },
     panelsSupported: number,
   ): PanelConfig {
-    
+    if (panelsSupported < 4) {
+      panelsSupported = 4;
+    }
     const configs = solarPotential.solarPanelConfigs;
     const index = configs.findIndex(
       (element: PanelConfig) => element.panelsCount === panelsSupported,
