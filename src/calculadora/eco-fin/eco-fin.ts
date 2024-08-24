@@ -1,6 +1,7 @@
 import { FlujoIngresosMonetarios } from 'src/interfaces/flujo-ingresos-monetarios/flujo-ingresos-monetarios.interface';
 import { FlujoEnergia } from '../datos-tecnicos/flujo-energia/flujo-energia';
 import { ProyeccionTarifas } from 'src/interfaces/proyeccion-tarifas/proyeccion-tarifas.interface';
+import { IflujoEnergia } from 'src/interfaces/iflujo-energia/iflujo-energia.interface';
 
 export class EcoFin {
   
@@ -19,7 +20,7 @@ export class EcoFin {
   constructor() {}
 
   public getFlujoIngresosMonetarios(
-    periodoVeinteanalFlujoEnergia: FlujoEnergia[],
+    periodoVeinteanalFlujoEnergia: IflujoEnergia[],
     tarifaConsumoEnergiaArs: number,
     tarifaInyeccionEnergiaArs: number,
   ): FlujoIngresosMonetarios[] {
@@ -30,22 +31,22 @@ export class EcoFin {
       tarifaInyeccionEnergiaArs / this.tipoDeCambioArs;
     // Generación del primer año
     periodoVeinteanal.push({
-      year: periodoVeinteanalFlujoEnergia[0].getYear(),
+      year: periodoVeinteanalFlujoEnergia[0].anio,
       ahorroEnElectricidadTotalUsd:
-      periodoVeinteanalFlujoEnergia[0].getAutoconsumida() *
+      periodoVeinteanalFlujoEnergia[0].energiaAutoconsumidaKwhAnio *
         cargoVariableConsumoUsd *
         (1 + this.impuestosProvincialesYTasasMunicipales),
       ingresoPorInyeccionElectricaUsd:
-      periodoVeinteanalFlujoEnergia[0].getInyectada() * cargoVariableInyeccionUsd,
+      periodoVeinteanalFlujoEnergia[0].energiaInyectadaKwhAnio * cargoVariableInyeccionUsd,
     });
 
     // Generación de los siguientes 19 años
     for (let i = 1; i < 20; i++) {
-      const previousYearAutoconsumida = periodoVeinteanalFlujoEnergia[i].getAutoconsumida();
-      const previousYearInyectada = periodoVeinteanalFlujoEnergia[i].getInyectada();
+      const previousYearAutoconsumida = periodoVeinteanalFlujoEnergia[i].energiaAutoconsumidaKwhAnio;
+      const previousYearInyectada = periodoVeinteanalFlujoEnergia[i].energiaInyectadaKwhAnio;
 
       periodoVeinteanal.push({
-        year: periodoVeinteanalFlujoEnergia[i].getYear(),
+        year: periodoVeinteanalFlujoEnergia[i].anio,
         ahorroEnElectricidadTotalUsd:
           previousYearAutoconsumida *
           cargoVariableConsumoUsd *
