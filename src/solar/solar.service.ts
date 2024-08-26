@@ -4,6 +4,7 @@ import { SolarCalculationDto } from './dto/solar-calculation.dto';
 import { CalculadoraService } from 'src/calculadora/calculadora.service';
 import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
 import { PanelConfig } from 'src/interfaces/panel-config/panel-config.interface';
+import { ResultadosDto } from 'src/interfaces/resultados-dto/resultados-dto.interface';
 
 @Injectable()
 export class SolarService {
@@ -42,19 +43,18 @@ export class SolarService {
   async calculateSolarSavings(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
-    
     const { latitude, longitude } = this.calculateCentroid(
       solarCalculationDto.polygonCoordinates,
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
     console.log(solarDataApi);
-    
+
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,
       solarCalculationDto.panelsSupported,
     );
-    console.log(solarPanelConfig);
+
     const solarData: SolarData = {
       annualConsumption: solarCalculationDto.annualConsumption,
       yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.85,
@@ -66,7 +66,6 @@ export class SolarService {
           height: solarDataApi.solarPotential.panelHeightMeters,
           width: solarDataApi.solarPotential.panelWidthMeters,
         },
-        
       },
       carbonOffsetFactorKgPerMWh:
         solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
@@ -105,7 +104,7 @@ export class SolarService {
   }
 
   private calculatePanelConfig(
-    solarPotential: { solarPanelConfigs: any; },
+    solarPotential: { solarPanelConfigs: any },
     panelsSupported: number,
   ): PanelConfig {
     if (panelsSupported < 4) {
@@ -119,11 +118,36 @@ export class SolarService {
     if (index === -1) {
       return configs[configs.length - 1];
     }
-    
+
     if (index === 0) {
       return configs[0];
     }
-    
+
     return configs[index];
+  }
+
+  async calculateSolarSavingsNearby(
+    solarDataNearby: SolarData,
+  ): Promise<ResultadosDto> {
+    const {
+      yearlyEnergyAcKwh,
+      panels: { panelsCountApi, maxPanelsPerSuperface },
+    } = solarDataNearby;
+    // Calcular la proporción entre maxPanelsPerSuperface y panelsCountApi
+    const proportion = maxPanelsPerSuperface / panelsCountApi;
+
+    // Ajustar el valor de yearlyEnergyAcKwh en función de la proporción
+    const adjustedYearlyEnergyAcKwh = yearlyEnergyAcKwh * proportion;
+
+    // Crear un nuevo objeto SolarData con el valor ajustado
+    const adjustedSolarDataNearby = {
+      ...solarDataNearby,
+      yearlyEnergyAcKwh: adjustedYearlyEnergyAcKwh,
+    };
+
+    // Llamar al servicio con los datos ajustados
+    return await this.calculadoraService.calculateEnergySavings(
+      adjustedSolarDataNearby,
+    );
   }
 }
