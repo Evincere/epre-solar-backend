@@ -42,7 +42,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 credentials.json
+./src/config/credentials.json
+client_secret_564358440211-c4nj24s8eq3dpk2e5l244mft553hje6a.apps.googleusercontent.com
 .env.development
+.env.sheets
 # temp directory
 .temp
 .tmp

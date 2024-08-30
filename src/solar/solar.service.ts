@@ -43,12 +43,14 @@ export class SolarService {
   async calculateSolarSavings(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
+    console.log(solarCalculationDto);
+
     const { latitude, longitude } = this.calculateCentroid(
       solarCalculationDto.polygonCoordinates,
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
-    console.log(solarDataApi);
+    // console.log(solarDataApi);
 
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,

@@ -6,12 +6,13 @@ import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
 import { GmailModule } from './gmail/gmail.module';
 import { CalculadoraModule } from './calculadora/calculadora.module';
 import { TarifaCategoriaModule } from './tarifa-categoria/tarifa-categoria.module';
+import { VariablesOnlineService } from './google-sheets/variables-online/variables-online.service';
 
 @Module({
   imports: [
     SolarModule,
     ConfigModule.forRoot({
-      envFilePath: ['.env.development'],
+      envFilePath: ['.env.development', '.env.sheets'],
       isGlobal: true,
     }),
     AuthModule,
@@ -21,6 +22,6 @@ import { TarifaCategoriaModule } from './tarifa-categoria/tarifa-categoria.modul
     TarifaCategoriaModule
   ],
   controllers: [],
-  providers: [],
+  providers: [VariablesOnlineService],
 })
 export class AppModule { }

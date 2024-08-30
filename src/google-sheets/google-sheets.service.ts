@@ -1,155 +1,116 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
-import { MesesConsumo } from 'src/interfaces/meses-consumo/meses-consumo.interface';
+import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
+import { CheckInitService } from './check-init/check-init.service';
+import { CaracteristicasSistema } from 'src/interfaces/sheets/caracteristicas-sistema/caracteristicas-sistema.interface';
+import { VariablesOnlineService } from './variables-online/variables-online.service';
+import { InversionCostos } from 'src/interfaces/sheets/inversion-ycostos/inversion-costos.interface';
+import { Economicas } from 'src/interfaces/sheets/cotizacion/economicas.interface';
+import { CuadroTarifario } from 'src/interfaces/sheets/cuadro-tarifario/cuadro-tarifario.interface';
+import { Parametros } from 'src/interfaces/sheets/parametros/parametros.interface';
+import { CalculadoraService } from 'src/calculadora/calculadora.service';
 
 @Injectable()
-export class GoogleSheetsService  {
-  
-  // private serviceAccountKeyFile = './credentials.json';
-  // private googleSheetClient: sheets_v4.Sheets;
+export class GoogleSheetsService implements OnModuleInit {
+  private googleSheetClient: sheets_v4.Sheets;
 
-  // constructor() { }
+  constructor(
+    private checkInitService: CheckInitService,
+    private variablesOnlineService: VariablesOnlineService,
+    private calculadoraService: CalculadoraService
+  ) { }
 
-  // async onModuleInit() {
-  //   this.googleSheetClient = await this.getGoogleSheetClient();
-  // }
+  async onModuleInit() {
+    this.googleSheetClient = await this.getGoogleSheetClient();
+  }
 
-  // async getGoogleSheetClient() {
-  //   const auth = new google.auth.GoogleAuth({
-  //     keyFile: this.serviceAccountKeyFile,
-  //     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  //   });
-  //   const authClient = await auth.getClient();
-  //   if (!(authClient instanceof google.auth.JWT)) {
-  //     throw new Error('authClient must be an instance of google.auth.JWT');
-  //   }
-  //   return google.sheets({
-  //     version: 'v4',
-  //     auth: authClient,
-  //   });
-  // }
+  async getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
+    const auth = new google.auth.GoogleAuth({
+      keyFile: './src/config/credentials.json', 
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    const authClient = await auth.getClient();
+    if (!(authClient instanceof google.auth.JWT)) {
+      throw new Error('authClient must be an instance of google.auth.JWT');
+    }
+    return google.sheets({
+      version: 'v4',
+      auth: authClient,
+    });
+  }
 
-  // async cargarConsumosAnuales(meses: MesesConsumo[]) {
-  //   const values = meses.map((mes) => [mes.consumo]);
-  //   const range = 'Datos de entrada!B5:B16';
-  //   const resource = {
-  //     values,
-  //   };
+  async isCalculadoraOnline(): Promise<any> {
+    return await this.checkInitService.isCalculadoraOnline(
+      this.googleSheetClient,
+    );
+  }
 
-  //   try {
-  //     const result = await this.googleSheetClient.spreadsheets.values.update({
-  //       spreadsheetId: process.env.SPREADSHEET_CALCULADORA!,
-  //       range,
-  //       valueInputOption: 'RAW',
-  //       requestBody: resource,
-  //     });
-  //     return result.data;
-  //   } catch (error) {
-  //     console.error('Error updating Google Sheets:', error);
-  //     throw error;
-  //   }
-  // }
+  async calculateOnline(
+    solarCalculationDto: SolarCalculationDto,
+  ): Promise<any> {
+    try {
+      // console.log('Calculating online with:', solarCalculationDto);
+      const caracteristicasSistema =
+        await this.getCaracteristicasSistema().then(
+          (caracteristicas) => caracteristicas,
+        );
+      const economicas = await this.getEconomicas();
+      const inversionCostos = await this.getInversionYCostos();
+      const cuadroTarifarioActual = await this.getCuadroTarifario();
+      const parametrosActuales: Parametros = {
+        caracteristicasSistema,
+        inversionCostos,
+        economicas,
+        cuadroTarifarioActual
+      } 
+      const solarCalculationWithParameters: SolarCalculationDto = {
+        ...solarCalculationDto,
+        parametros : parametrosActuales
+      }
+      
+      return solarCalculationWithParameters;
+    } catch (error) {
+      console.error('Error calculating online:', error);
+      throw error;
+    }
+  }
+  getCuadroTarifario(): Promise<CuadroTarifario[]> {
+    try {
+      return this.variablesOnlineService.getCuadroTarifario(this.googleSheetClient);
+    } catch (error) {
+      console.error('Error al obtener los cuadros tarifarios:', error);
+      throw new Error('No se pudieron obtener los cuadros tarifarios.');
+    }
+  }
+ 
+  getInversionYCostos(): Promise<InversionCostos> {
+    try {
+      return this.variablesOnlineService.getInversionYCostos(this.googleSheetClient);
+    } catch (error) {
+      console.error('Error al obtener los datos de inversion y costos:', error);
+      throw new Error('No se pudieron obtener los datos de inversion y costos.');
+    }
+  }
 
-  // async cargarDatosSolarApi(solarData: any) {
-  //   const solarPotential = solarData.solarPotential;
-  //   const solarPanelConfig = solarPotential.solarPanelConfigs[0]; // todo: debe obtener la configuracion mas adecuada para cubrir el consumo del usuario
-  //   await this.cargarYearlyEnergyDCkWh(solarPanelConfig.yearlyEnergyDcKwh);
-  //   await this.cargarPanelsCount(solarPanelConfig.panelsCount);
-  // }
+  getEconomicas(): Promise<Economicas> {
+    try {
+      return this.variablesOnlineService.getEconomicas(this.googleSheetClient);
+    } catch (error) {
+      console.error('Error al obtener la cotización:', error);
+      throw new Error('No se pudo obtener la cotización.');
+    }
+  }
 
-  // async cargarPanelsCount(panelsCount: number) {
-  //   const range = 'Datos de entrada!B22';
-  //   const resource = {
-  //     values: [[panelsCount]],
-  //   };
-
-  //   try {
-  //     const result = await this.googleSheetClient.spreadsheets.values.update({
-  //       spreadsheetId: process.env.SPREADSHEET_CALCULADORA,
-  //       range,
-  //       valueInputOption: 'RAW',
-  //       requestBody: resource,
-  //     });
-  //     return result.data;
-  //   } catch (error) {
-  //     console.error('Error updating Google Sheets:', error);
-  //     throw error;
-  //   }
-  // }
-
-  // async cargarYearlyEnergyDCkWh(yearlyEnergyDcKwh: number) {
-  //   let range = `Datos de entrada!B20`;
-  //   const resource = {
-  //     values: [[yearlyEnergyDcKwh]],
-  //   };
-
-  //   try {
-  //     const result = await this.googleSheetClient.spreadsheets.values.update({
-  //       spreadsheetId: process.env.SPREADSHEET_CALCULADORA!,
-  //       range,
-  //       valueInputOption: 'RAW',
-  //       requestBody: resource,
-  //     });
-  //     return result.data;
-  //   } catch (error) {
-  //     console.error('Error updating Google Sheets:', error);
-  //     throw error;
-  //   }
-  // }
-
-  // async readValueCalculadora(tabName: string, range: string) {
-  //   return this.googleSheetClient.spreadsheets.values.get({
-  //     spreadsheetId: process.env.SPREADSHEET_CALCULADORA!,
-  //     range: `${tabName}!${range}`,
-  //   });
-  // }
-
-  // async readResultados() {
-  //   /* Obtener caso con capital propio */
-
-  //   /* Obtener  los indicadores financieros*/
-  //   const indicadoresFinancieros: IndicadorFinanciero =
-  //     await this.getIndicadoresFinancieros();
-
-  //   /* Obtener las emisiones GEI evitadas */
-  //   const emisionesGEIEvitadas =
-  //     await this.getEmisionesGEIEvitadas();
-  //   console.log('Emisiones de GEI Evitadas:', emisionesGEIEvitadas);
-  //   return indicadoresFinancieros;
-  // }
-
-  // private async getIndicadoresFinancieros(): Promise<IndicadorFinanciero> {
-  //   const response = await this.readValueCalculadora('Resultados', 'A14:B16');
-  //   const values = response.data.values;
-  //   // Verifica que haya suficientes valores para llenar el objeto IndicadorFinanciero
-  //   if (values.length < 3 || values[0].length < 2) {
-  //     throw new Error(
-  //       'No se encontraron datos suficientes para los indicadores financieros.',
-  //     );
-  //   }
-
-  //   // Construye el objeto IndicadorFinanciero a partir de los valores
-  //   const indicadorFinanciero: IndicadorFinanciero = {
-  //     VAN$: parseFloat(values[0][1].replace('$', '').replace(',', '.')),
-  //     'TIR%': parseFloat(values[1][1].replace('%', '').replace(',', '.')),
-  //     payBackSimpleYears: parseFloat(values[2][1].replace(',', '.')),
-  //   };
-
-  //   return indicadorFinanciero;
-  // }
-
-  // private async getEmisionesGEIEvitadas() {
-  //   const response = await this.readValueCalculadora('Resultados', 'B19:U20');
-  //   const values = response.data.values;
-
-  //   const years = values[0];
-  //   const emissionsStrings = values[1];
-
-  //   const emissionsNumbers = emissionsStrings.map(emission => parseFloat(emission));
-
-  //   return {
-  //     years,
-  //     emissions: emissionsNumbers
-  //   };
-  // }
+  private async getCaracteristicasSistema(): Promise<CaracteristicasSistema> {
+    try {
+      return this.variablesOnlineService.getCaracteristicasSistema(
+        this.googleSheetClient,
+      );
+    } catch (error) {
+      console.error('Error al obtener las características del sistema:', error);
+      throw new Error(
+        'No se pudieron obtener las características del sistema.',
+      );
+    }
+  }
 }

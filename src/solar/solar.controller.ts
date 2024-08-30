@@ -4,11 +4,16 @@ import { SolarCalculationDto } from './dto/solar-calculation.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResultadosDto } from 'src/interfaces/resultados-dto/resultados-dto.interface';
 import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
+import { CheckInitService } from 'src/google-sheets/check-init/check-init.service';
+import { GoogleSheetsService } from 'src/google-sheets/google-sheets.service';
 
 @ApiTags('solar')
 @Controller('solar')
 export class SolarController {
-  constructor(private readonly solarService: SolarService) {}
+  constructor(
+    private readonly solarService: SolarService,
+    private readonly sheetsService: GoogleSheetsService,
+  ) {}
 
   @Post('calculate')
   @ApiOperation({
@@ -17,7 +22,20 @@ export class SolarController {
   async calculateSolarSavings(
     @Body() solarCalculationDto: SolarCalculationDto,
   ): Promise<ResultadosDto> {
-    return await this.solarService.calculateSolarSavings(solarCalculationDto);
+    try {
+      const isOnline = await this.sheetsService.isCalculadoraOnline();
+      
+      if (isOnline) {
+        const solarCalculationWithParameters = await this.sheetsService.calculateOnline(solarCalculationDto);
+        
+        return await this.solarService.calculateSolarSavings(solarCalculationWithParameters);
+      } else {
+        return await this.solarService.calculateSolarSavings(solarCalculationDto);
+      }
+    } catch (error) {
+      console.error('Error al calcular el ahorro solar:', error);
+      throw new Error('No se pudo calcular el ahorro solar.');
+    }
   }
 
   @Post('calculate-nearby')
