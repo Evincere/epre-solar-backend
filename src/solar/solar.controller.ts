@@ -13,7 +13,7 @@ export class SolarController {
   constructor(
     private readonly solarService: SolarService,
     private readonly sheetsService: GoogleSheetsService,
-  ) {}
+  ) { }
 
   @Post('calculate')
   @ApiOperation({
@@ -24,10 +24,10 @@ export class SolarController {
   ): Promise<ResultadosDto> {
     try {
       const isOnline = await this.sheetsService.isCalculadoraOnline();
-      
+
       if (isOnline) {
-        const solarCalculationWithParameters = await this.sheetsService.calculateOnline(solarCalculationDto);
-        
+        const solarCalculationWithParameters = await this.sheetsService.addParametersToSolarCalculationDto(solarCalculationDto);
+        // console.log("calculos con parametros" + solarCalculationWithParameters)
         return await this.solarService.calculateSolarSavings(solarCalculationWithParameters);
       } else {
         return await this.solarService.calculateSolarSavings(solarCalculationDto);

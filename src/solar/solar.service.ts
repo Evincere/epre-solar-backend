@@ -41,28 +41,27 @@ export class SolarService {
   }
 
   async calculateSolarSavings(
-    solarCalculationDto: SolarCalculationDto,
+    dto: SolarCalculationDto,
   ): Promise<any> {
-    console.log(solarCalculationDto);
+    // console.log(dto);
 
     const { latitude, longitude } = this.calculateCentroid(
-      solarCalculationDto.polygonCoordinates,
+      dto.polygonCoordinates,
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
-    // console.log(solarDataApi);
 
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,
-      solarCalculationDto.panelsSupported,
+      dto.panelsSupported,
     );
 
     const solarData: SolarData = {
-      annualConsumption: solarCalculationDto.annualConsumption,
-      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.85,
+      annualConsumption: dto.annualConsumption,
+      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * dto.parametros?.caracteristicasSistema?.eficienciaInstalacion ?? 0.85,
       panels: {
         panelsCountApi: solarPanelConfig.panelsCount,
-        maxPanelsPerSuperface: solarCalculationDto.panelsSupported,
+        maxPanelsPerSuperface: dto.panelsSupported,
         panelCapacityW: solarDataApi.solarPotential.panelCapacityWatts,
         panelSize: {
           height: solarDataApi.solarPotential.panelHeightMeters,
@@ -71,10 +70,10 @@ export class SolarService {
       },
       carbonOffsetFactorKgPerMWh:
         solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
-      tarifaCategory: solarCalculationDto.categoriaSeleccionada,
+      tarifaCategory: dto.categoriaSeleccionada,
     };
 
-    return await this.calculadoraService.calculateEnergySavings(solarData);
+    return await this.calculadoraService.calculateEnergySavings(solarData, dto);
   }
 
   // Método para calcular el centroide de una superficie

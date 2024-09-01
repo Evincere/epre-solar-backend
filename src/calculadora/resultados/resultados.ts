@@ -3,17 +3,22 @@ import { IndicadoresFinancieros } from 'src/interfaces/indicadores-financieros/i
 import { ResultadosCapitalPropio } from 'src/interfaces/resultados-capital-propio/resultados-capital-propio.interface';
 import { EcoFin } from '../eco-fin/eco-fin';
 import { FlujoIngresosMonetarios } from 'src/interfaces/flujo-ingresos-monetarios/flujo-ingresos-monetarios.interface';
+import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
 
 export class Resultados {
   private readonly tasaDescuento = 10 / 100;
   private _casoConCapitalPropio: ResultadosCapitalPropio[];
   private _indicadoresFinancieros: IndicadoresFinancieros;
   private _emisionesGEIEvitadas: EmisionesGeiEvitadas[];
+  private dto: SolarCalculationDto;
 
   constructor(
     periodoVeinteanalFlujoIngresosMonetarios: FlujoIngresosMonetarios[],
     periodoVeinteanalEmisionesGEIEvitadas: EmisionesGeiEvitadas[],
+    dto: SolarCalculationDto
   ) {
+    this.dto = dto
+    
     this.generarResultadosCapitalPropio(
       periodoVeinteanalFlujoIngresosMonetarios,
     );
@@ -30,14 +35,14 @@ export class Resultados {
       year: new Date().getFullYear(),
       flujoIngresos: 0,
       flujoEgresos: 0,
-      inversiones: EcoFin.costoInversionUsd,
-      flujoFondos: 0 - 0 - EcoFin.costoInversionUsd,
-      flujoAcumulado: 0 - 0 - EcoFin.costoInversionUsd,
+      inversiones: this.dto.parametros.inversionCostos.inversion,
+      flujoFondos: 0 - 0 - this.dto.parametros.inversionCostos.inversion,
+      flujoAcumulado: 0 - 0 - this.dto.parametros.inversionCostos.inversion,
     });
 
     for (let i = 1; i < 20; i++) {
       const year = periodoVeinteanalFlujoIngresosMonetarios[i - 1].year;
-      
+
       const currentFlujoIngresos =
         periodoVeinteanalFlujoIngresosMonetarios[i - 1]
           .ahorroEnElectricidadTotalUsd +
@@ -46,10 +51,10 @@ export class Resultados {
 
       const currentFlujoEgresos =
         periodoVeinteanal[i - 1].flujoEgresos +
-        EcoFin.costoMantenimientoUsd * 0.05;
-      
+        this.dto.parametros.inversionCostos.inversion * this.dto.parametros.economicas.tasaInflacionUsd;
+
       const inversiones = 0;
-      
+
       const currentFlujoFondos =
         currentFlujoIngresos - currentFlujoEgresos - inversiones;
       const currentFlujoAcumulado =

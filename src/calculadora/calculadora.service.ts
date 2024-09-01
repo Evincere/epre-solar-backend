@@ -4,18 +4,16 @@ import { Tarifa } from 'src/tarifa-categoria/tarifa/tarifa';
 import { DatosTecnicos } from './datos-tecnicos/datos-tecnicos';
 import { EcoFin } from './eco-fin/eco-fin';
 import { Resultados } from './resultados/resultados';
+import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
 
 @Injectable()
 export class CalculadoraService {
   private datosTecnicos: DatosTecnicos;
   private ecoFin: EcoFin;
   private resultadosFinancieros: Resultados;
-  constructor() {
-    this.datosTecnicos = new DatosTecnicos();
-    this.ecoFin = new EcoFin();
-  }
+  constructor() {}
   // Método principal para calcular el ahorro energético
-  calculateEnergySavings(solarData: SolarData): any {
+  calculateEnergySavings(solarData: SolarData, dto?: SolarCalculationDto): any {
     // Obtener datos del API de Solar
     const yearlyEnergyACKwh: number = solarData.yearlyEnergyAcKwh;
     const panelsCount: number = solarData.panels.panelsCountApi;
@@ -23,12 +21,17 @@ export class CalculadoraService {
     const panelsSizeInstalationWp: number = panelsCount * panelCapacityW;
     const geiEmitionFactorTCo2Mwh: number =
       solarData.carbonOffsetFactorKgPerMWh / 1000;
-    const tarifaCategory: Tarifa = new Tarifa(solarData.tarifaCategory);
+    const tarifaCategory: Tarifa = new Tarifa(
+      solarData.tarifaCategory,
+      dto.potenciaMaxAsignada,
+      dto.parametros?.cuadroTarifarioActual,
+    );
     const annualConsumption = solarData.annualConsumption;
+
+    this.datosTecnicos = new DatosTecnicos(dto, solarData);
+
     const periodoVeinteanalGeneracionFotovoltaica =
-      this.datosTecnicos.getGeneracionFotovoltaica(
-        yearlyEnergyACKwh,
-      );
+      this.datosTecnicos.getGeneracionFotovoltaica(yearlyEnergyACKwh);
 
     const periodoVeinteanalFlujoEnergia = this.datosTecnicos.getFlujoEnergia(
       annualConsumption,
@@ -40,12 +43,11 @@ export class CalculadoraService {
       this.datosTecnicos.getEmisionesGEIEvitadas(
         periodoVeinteanalGeneracionFotovoltaica,
       );
-    
-    const periodoVeinteanalProyeccionTarifas = 
-      this.ecoFin.getProyeccionDeTarifas(
-        tarifaCategory.tarifaConsumoEnergiaArs,
-        tarifaCategory.tarifaInyeccionEnergiaArs,
-      )
+
+    this.ecoFin = new EcoFin(dto, solarData, tarifaCategory);
+
+    const periodoVeinteanalProyeccionTarifas =
+      this.ecoFin.getProyeccionDeTarifas(tarifaCategory);
 
     const periodoVeinteanalFlujoIngresosMonetarios =
       this.ecoFin.getFlujoIngresosMonetarios(
@@ -57,8 +59,9 @@ export class CalculadoraService {
     this.resultadosFinancieros = new Resultados(
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
+      dto,
     );
-    
+
     return {
       solarData,
       periodoVeinteanalGeneracionFotovoltaica,
@@ -66,10 +69,11 @@ export class CalculadoraService {
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
       periodoVeinteanalProyeccionTarifas,
-      resultadosFinancieros : {
+      resultadosFinancieros: {
         casoConCapitalPropio: this.resultadosFinancieros.casoConCapitalPropio,
-        indicadoresFinancieros: this.resultadosFinancieros.indicadoresFinancieros,
-      }
+        indicadoresFinancieros:
+          this.resultadosFinancieros.indicadoresFinancieros,
+      },
     };
   }
 }

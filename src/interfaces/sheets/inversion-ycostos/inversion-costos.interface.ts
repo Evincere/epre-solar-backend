@@ -1,5 +1,6 @@
 export interface InversionCostos {
     costoUsdWp: number,
     equipoDeMedicionUsd: number,
-    costoDeMantenimientoInicialUsd: number
+    costoDeMantenimientoInicialUsd: number,
+    inversion: number
 }

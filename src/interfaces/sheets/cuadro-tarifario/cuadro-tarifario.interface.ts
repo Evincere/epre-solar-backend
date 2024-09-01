@@ -3,4 +3,5 @@ export interface CuadroTarifario {
   cargoVariableConsumoArsKWh: number;
   cargoVariableInyeccionArsKWh: number;
   tension: 'baja' | 'media' | 'alta';
+  impuestos: number;
 }

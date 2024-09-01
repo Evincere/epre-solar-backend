@@ -17,8 +17,8 @@ export class GoogleSheetsService implements OnModuleInit {
   constructor(
     private checkInitService: CheckInitService,
     private variablesOnlineService: VariablesOnlineService,
-    private calculadoraService: CalculadoraService
-  ) { }
+    private calculadoraService: CalculadoraService,
+  ) {}
 
   async onModuleInit() {
     this.googleSheetClient = await this.getGoogleSheetClient();
@@ -26,7 +26,7 @@ export class GoogleSheetsService implements OnModuleInit {
 
   async getGoogleSheetClient(): Promise<sheets_v4.Sheets> {
     const auth = new google.auth.GoogleAuth({
-      keyFile: './src/config/credentials.json', 
+      keyFile: './src/config/credentials.json',
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
     const authClient = await auth.getClient();
@@ -45,11 +45,10 @@ export class GoogleSheetsService implements OnModuleInit {
     );
   }
 
-  async calculateOnline(
+  async addParametersToSolarCalculationDto(
     solarCalculationDto: SolarCalculationDto,
   ): Promise<any> {
     try {
-      // console.log('Calculating online with:', solarCalculationDto);
       const caracteristicasSistema =
         await this.getCaracteristicasSistema().then(
           (caracteristicas) => caracteristicas,
@@ -61,38 +60,45 @@ export class GoogleSheetsService implements OnModuleInit {
         caracteristicasSistema,
         inversionCostos,
         economicas,
-        cuadroTarifarioActual
-      } 
+        cuadroTarifarioActual,
+      };
       const solarCalculationWithParameters: SolarCalculationDto = {
         ...solarCalculationDto,
-        parametros : parametrosActuales
-      }
-      
+        parametros: parametrosActuales,
+      };
+
       return solarCalculationWithParameters;
     } catch (error) {
       console.error('Error calculating online:', error);
       throw error;
     }
   }
-  getCuadroTarifario(): Promise<CuadroTarifario[]> {
+
+  private getCuadroTarifario(): Promise<CuadroTarifario[]> {
     try {
-      return this.variablesOnlineService.getCuadroTarifario(this.googleSheetClient);
+      return this.variablesOnlineService.getCuadroTarifario(
+        this.googleSheetClient,
+      );
     } catch (error) {
       console.error('Error al obtener los cuadros tarifarios:', error);
       throw new Error('No se pudieron obtener los cuadros tarifarios.');
     }
   }
- 
-  getInversionYCostos(): Promise<InversionCostos> {
+
+  private getInversionYCostos(): Promise<InversionCostos> {
     try {
-      return this.variablesOnlineService.getInversionYCostos(this.googleSheetClient);
+      return this.variablesOnlineService.getInversionYCostos(
+        this.googleSheetClient,
+      );
     } catch (error) {
       console.error('Error al obtener los datos de inversion y costos:', error);
-      throw new Error('No se pudieron obtener los datos de inversion y costos.');
+      throw new Error(
+        'No se pudieron obtener los datos de inversion y costos.',
+      );
     }
   }
 
-  getEconomicas(): Promise<Economicas> {
+  private getEconomicas(): Promise<Economicas> {
     try {
       return this.variablesOnlineService.getEconomicas(this.googleSheetClient);
     } catch (error) {

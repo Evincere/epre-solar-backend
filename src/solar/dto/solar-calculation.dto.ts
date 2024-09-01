@@ -15,6 +15,8 @@ export class SolarCalculationDto {
     polygonArea: number;
     @ApiProperty()
     panelsSupported: number;
+    @ApiProperty()
+    potenciaMaxAsignada: number;
     parametros?: Parametros
   }
   

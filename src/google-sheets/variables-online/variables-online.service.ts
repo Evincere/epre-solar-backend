@@ -13,8 +13,10 @@ export class VariablesOnlineService {
   private readonly spreadsheetId: string;
   private readonly rangeCaracteristicas: string;
   private readonly rangeEconomicas: string;
-  private readonly rangeInversionCostos: string;
+  private readonly rangeCostos: string;
   private readonly rangeCuadroTarifario: string;
+  private readonly rangeTaxes: string;
+  private readonly rangeInversion: string;
 
   constructor(private readonly configService: ConfigService) {
     this.spreadsheetId = this.configService.get<string>('GOOGLE_SHEET_ID');
@@ -24,12 +26,19 @@ export class VariablesOnlineService {
     this.rangeEconomicas = this.configService.get<string>(
       'GOOGLE_SHEET_RANGE_ECONOMICAS',
     );
-    this.rangeInversionCostos = this.configService.get<string>(
-      'GOOGLE_SHEET_RANGE_INVERSION_COSTOS',
+    this.rangeCostos = this.configService.get<string>(
+      'GOOGLE_SHEET_RANGE_COSTOS',
+    );
+    this.rangeInversion = this.configService.get<string>(
+      'GOOGLE_SHEET_RANGE_INVERSION',
     );
 
     this.rangeCuadroTarifario = this.configService.get<string>(
       'GOOGLE_SHEET_RANGE_CUADRO_TARIFARIO',
+    )
+
+    this.rangeTaxes = this. configService.get<string>(
+      'GOOGLE_SHEET_RANGE_TAXES'
     )
     
   }
@@ -40,18 +49,29 @@ export class VariablesOnlineService {
         spreadsheetId: this.spreadsheetId, 
         range: this.rangeCuadroTarifario,
       });
-
+      let taxesResponse  = await googleSheetClient.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: this.rangeTaxes
+      })
+      
       const rows = response.data.values;
-      if (!rows || rows.length === 0) {
+      const taxes = taxesResponse.data.values;
+    
+      if (!rows || rows.length === 0 || !taxes) {
         throw new Error('No se encontraron datos en el rango especificado.');
       }
 
-      const cuadroTarifario: CuadroTarifario[] = rows.map((row) => ({
-        nombre: row[0] as CuadroTarifario['nombre'], // Tarifa
-        cargoVariableConsumoArsKWh: parseFloat(row[1]), // Cargo variable consumo
-        cargoVariableInyeccionArsKWh: parseFloat(row[2]), // Cargo variable inyección
-        tension: row[3] as CuadroTarifario['tension'], // Tensión
-      }));
+
+      const cuadroTarifario: CuadroTarifario[] = rows.map((row, index) => {
+        const taxRow = taxes[index]; // Suponiendo que las filas de `taxes` correspondan a `rows`
+        return {
+          nombre: row[0] as CuadroTarifario['nombre'], 
+          cargoVariableConsumoArsKWh: parseFloat(row[1]), 
+          cargoVariableInyeccionArsKWh: parseFloat(row[2]), 
+          tension: row[3] as CuadroTarifario['tension'], 
+          impuestos: taxRow ? parseFloat(taxRow[0]) / 100 : 0 
+        };
+      });
 
       return cuadroTarifario;
     } catch (error) {
@@ -67,11 +87,18 @@ export class VariablesOnlineService {
     try {
       const response = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: this.rangeInversionCostos,
+        range: this.rangeCostos,
+      });
+
+      const responseInversion = await googleSheetClient.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: this.rangeInversion
       });
 
       const rows = response.data.values;
-      if (!rows || rows.length === 0) {
+      const rowsInversion = responseInversion.data.values;
+
+      if (!rows || rows.length === 0 || !rowsInversion) {
         throw new Error('No se encontraron datos en el rango especificado.');
       }
 
@@ -79,6 +106,7 @@ export class VariablesOnlineService {
         costoUsdWp: parseFloat(rows[0][1]),
         equipoDeMedicionUsd: parseFloat(rows[1][1]),
         costoDeMantenimientoInicialUsd: parseFloat(rows[2][1]),
+        inversion: parseFloat(rowsInversion[0][0])
       };
 
       return inversionYCostos;
@@ -138,8 +166,8 @@ export class VariablesOnlineService {
 
       const economicas: Economicas = {
         tipoCambioArs: parseEconomicas(rows[0][1]),
-        tasaInflacionUsd: parseEconomicas(rows[1][1]),
-        tasaDescuentoFlujoFondosUsd: parseEconomicas(rows[2][1])
+        tasaInflacionUsd: parseEconomicas(rows[1][1]) / 100,
+        tasaDescuentoFlujoFondosUsd: parseEconomicas(rows[2][1]) / 100
       };
 
       return economicas;
