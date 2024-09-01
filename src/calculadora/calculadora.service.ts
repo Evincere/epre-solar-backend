@@ -56,9 +56,13 @@ export class CalculadoraService {
         tarifaCategory.tarifaInyeccionEnergiaArs,
       );
 
+    const periodoVeinteanalCostoMantenimiento =
+      this.ecoFin.getCostoMantenimiento();
+
     this.resultadosFinancieros = new Resultados(
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
+      periodoVeinteanalCostoMantenimiento,
       dto,
     );
 

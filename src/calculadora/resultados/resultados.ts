@@ -4,6 +4,7 @@ import { ResultadosCapitalPropio } from 'src/interfaces/resultados-capital-propi
 import { EcoFin } from '../eco-fin/eco-fin';
 import { FlujoIngresosMonetarios } from 'src/interfaces/flujo-ingresos-monetarios/flujo-ingresos-monetarios.interface';
 import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
+import { CostoMantenimiento } from 'src/interfaces/costo-mantenimiento/costo-mantenimiento.interface';
 
 export class Resultados {
   private readonly tasaDescuento = 10 / 100;
@@ -15,12 +16,14 @@ export class Resultados {
   constructor(
     periodoVeinteanalFlujoIngresosMonetarios: FlujoIngresosMonetarios[],
     periodoVeinteanalEmisionesGEIEvitadas: EmisionesGeiEvitadas[],
+    periodoVeinteanalCostoMantenimiento: CostoMantenimiento[],
     dto: SolarCalculationDto
   ) {
     this.dto = dto
     
     this.generarResultadosCapitalPropio(
       periodoVeinteanalFlujoIngresosMonetarios,
+      periodoVeinteanalCostoMantenimiento
     );
     this.generarIndicadoresFinancieros();
     this.emisionesGEIEvitadas = periodoVeinteanalEmisionesGEIEvitadas;
@@ -28,6 +31,7 @@ export class Resultados {
 
   private generarResultadosCapitalPropio(
     periodoVeinteanalFlujoIngresosMonetarios: FlujoIngresosMonetarios[],
+    periodoVeinteanalCostoMantenimiento: CostoMantenimiento[]
   ): void {
     const periodoVeinteanal: ResultadosCapitalPropio[] = [];
 
@@ -41,7 +45,7 @@ export class Resultados {
     });
 
     for (let i = 1; i < 20; i++) {
-      const year = periodoVeinteanalFlujoIngresosMonetarios[i - 1].year;
+      const year = periodoVeinteanalFlujoIngresosMonetarios[i].year;
 
       const currentFlujoIngresos =
         periodoVeinteanalFlujoIngresosMonetarios[i - 1]
@@ -50,13 +54,10 @@ export class Resultados {
           .ingresoPorInyeccionElectricaUsd;
 
       const currentFlujoEgresos =
-        periodoVeinteanal[i - 1].flujoEgresos +
-        this.dto.parametros.inversionCostos.inversion * this.dto.parametros.economicas.tasaInflacionUsd;
-
-      const inversiones = 0;
+      periodoVeinteanalCostoMantenimiento[i].costoUsd
 
       const currentFlujoFondos =
-        currentFlujoIngresos - currentFlujoEgresos - inversiones;
+        currentFlujoIngresos - currentFlujoEgresos;
       const currentFlujoAcumulado =
         periodoVeinteanal[i - 1].flujoAcumulado + currentFlujoFondos;
 
@@ -64,8 +65,8 @@ export class Resultados {
         year,
         flujoIngresos: currentFlujoIngresos,
         flujoEgresos: currentFlujoEgresos,
-        inversiones,
         flujoFondos: currentFlujoFondos,
+        inversiones: 0,
         flujoAcumulado: currentFlujoAcumulado,
       });
     }

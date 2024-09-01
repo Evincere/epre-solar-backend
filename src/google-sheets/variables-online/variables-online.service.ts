@@ -106,7 +106,7 @@ export class VariablesOnlineService {
         costoUsdWp: parseFloat(rows[0][1]),
         equipoDeMedicionUsd: parseFloat(rows[1][1]),
         costoDeMantenimientoInicialUsd: parseFloat(rows[2][1]),
-        inversion: parseFloat(rowsInversion[0][0])
+        inversion: 1
       };
 
       return inversionYCostos;

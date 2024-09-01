@@ -5,20 +5,18 @@ import { IflujoEnergia } from 'src/interfaces/iflujo-energia/iflujo-energia.inte
 import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
 import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
 import { Tarifa } from 'src/tarifa-categoria/tarifa/tarifa';
+import { CostoMantenimiento } from 'src/interfaces/costo-mantenimiento/costo-mantenimiento.interface';
 
 export class EcoFin {
   private tipoDeCambioArs: number;
-  private valorArsW = 120;
-  // private valorMaximoPermitidoArs = 8500000;
-  // private valorEstimadoInstalacionArs = 120000;
-  // private valorEfectivoArs = 120000;
-  private impuestosProvincialesYTasasMunicipales;
-  private costoUsdWpSinIVA;
-  private costoEquipoMedicionUsd;
-  private inversionUsd;
-  private costoMantenimientoUsd;
+  private impuestosProvincialesYTasasMunicipales: number;
+  private costoUsdWpSinIVA: number;
+  private costoEquipoMedicionUsd: number;
+  private inversionUsd: number;
+  private costoMantenimientoUsd: number;
   private actualYear: number = new Date().getFullYear();
   private dto: SolarCalculationDto;
+  private solarData: SolarData;
 
   constructor(
     dto: SolarCalculationDto,
@@ -26,17 +24,26 @@ export class EcoFin {
     tarifaCategory: Tarifa,
   ) {
     this.dto = dto;
+    this.solarData = solarData;
     this.tipoDeCambioArs = dto.parametros.economicas.tipoCambioArs;
     this.impuestosProvincialesYTasasMunicipales = tarifaCategory.impuestos;
     this.costoUsdWpSinIVA = dto.parametros.inversionCostos.costoUsdWp;
     this.costoEquipoMedicionUsd =
       dto.parametros.inversionCostos.equipoDeMedicionUsd;
-    this.inversionUsd = dto.parametros.inversionCostos.inversion;
+    this.calculateInversionInicial(solarData);
     this.costoMantenimientoUsd =
       dto.parametros.inversionCostos.costoDeMantenimientoInicialUsd;
   }
 
-  public getFlujoIngresosMonetarios(
+  calculateInversionInicial(solarData: SolarData) {
+    this.dto.parametros.inversionCostos.inversion = (
+      this.costoUsdWpSinIVA *
+      (solarData.panels.panelCapacityW * solarData.panels.panelsCountApi +
+        solarData.carbonOffsetFactorKgPerMWh / 1000)
+    )
+  }
+
+  getFlujoIngresosMonetarios(
     periodoVeinteanalFlujoEnergia: IflujoEnergia[],
     tarifaConsumoEnergiaArs: number,
     tarifaInyeccionEnergiaArs: number,
@@ -104,6 +111,27 @@ export class EcoFin {
           (1 + this.dto.parametros.economicas.tasaInflacionUsd),
         tasaAnualAumentoDeTarifas:
           this.dto.parametros.economicas.tasaInflacionUsd,
+      });
+    }
+
+    return periodoVeinteanal;
+  }
+
+  getCostoMantenimiento() {
+    const periodoVeinteanal: CostoMantenimiento[] = [];
+
+    periodoVeinteanal.push({
+      year: this.actualYear,
+      costoUsd: this.costoMantenimientoUsd,
+    });
+
+    for (let i = 1; i < 20; i++) {
+      const previousCosto = periodoVeinteanal[i - 1];
+      periodoVeinteanal.push({
+        year: previousCosto.year + 1,
+        costoUsd:
+          previousCosto.costoUsd *
+          (1 + this.dto.parametros.economicas.tasaInflacionUsd),
       });
     }
 

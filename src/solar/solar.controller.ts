@@ -13,7 +13,7 @@ export class SolarController {
   constructor(
     private readonly solarService: SolarService,
     private readonly sheetsService: GoogleSheetsService,
-  ) { }
+  ) {}
 
   @Post('calculate')
   @ApiOperation({
@@ -26,11 +26,18 @@ export class SolarController {
       const isOnline = await this.sheetsService.isCalculadoraOnline();
 
       if (isOnline) {
-        const solarCalculationWithParameters = await this.sheetsService.addParametersToSolarCalculationDto(solarCalculationDto);
+        const solarCalculationWithParameters =
+          await this.sheetsService.addParametersToSolarCalculationDto(
+            solarCalculationDto,
+          );
         // console.log("calculos con parametros" + solarCalculationWithParameters)
-        return await this.solarService.calculateSolarSavings(solarCalculationWithParameters);
+        return await this.solarService.calculateSolarSavings(
+          solarCalculationWithParameters,
+        );
       } else {
-        return await this.solarService.calculateSolarSavings(solarCalculationDto);
+        return await this.solarService.calculateSolarSavings(
+          solarCalculationDto,
+        );
       }
     } catch (error) {
       console.error('Error al calcular el ahorro solar:', error);
