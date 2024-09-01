@@ -21,7 +21,9 @@ export class DatosTecnicos {
       dto.parametros.caracteristicasSistema.eficienciaInstalacion;
     this.degradacionAnualPaneles =
       dto.parametros.caracteristicasSistema.degradacionAnualPanel;
-    this.factorEmisiontCO2perMWh = solarData.carbonOffsetFactorKgPerMWh;
+    this.factorEmisiontCO2perMWh = solarData.carbonOffsetFactorKgPerMWh / 1000;
+    console.log(this.factorEmisiontCO2perMWh);
+    
     this.proporcionAutoconsumo =
       dto.parametros.caracteristicasSistema.proporcionAutoconsumo;
     this.proporcionInyeccion =
@@ -125,13 +127,14 @@ export class DatosTecnicos {
         periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh;
       const emisionesTonCO2 =
         currentYearGeneration * (this.factorEmisiontCO2perMWh / 1000);
-
+    
       periodoVeinteanal.push({
         year: periodoVeinteanalGeneracionFotovoltaica[i].anio,
         emisionesTonCO2,
       });
     }
 
+    
     return periodoVeinteanal;
   }
 }
