@@ -32,6 +32,7 @@ export class Tarifa {
     tarifarioActual?: CuadroTarifario[],
   ) {
     this.categoria = categoria;
+    console.log(this.categoria);
     this.potenciaMaximaContratadaKw = potenciaMaximaContratadaKw ?? 0;
 
     const cargos = this.obtenerCargos(tarifarioActual);
@@ -45,11 +46,14 @@ export class Tarifa {
     inyeccion: number;
     impuestos: number;
   } {
+    console.log(tarifarioActual);
 
     if (tarifarioActual) {
       const cuadro = tarifarioActual.find((tarifa) => {
-        return this.matchCategoriaConCuadro(tarifa.nombre, this.categoria);
+        return tarifa.nombre == this.categoria;
       });
+      console.log(cuadro);
+
       if (cuadro) {
         return {
           consumo: cuadro.cargoVariableConsumoArsKWh,
@@ -59,12 +63,23 @@ export class Tarifa {
       }
     }
 
-    // Si no se encuentra en tarifarioActual, usar los valores por defecto
+    // Manejar el caso en el que no se encuentra un cuadro
+    console.warn(
+      `No se encontró un cuadro tarifario para la categoría ${this.categoria}. Usando valores por defecto.`,
+    );
     const cargosPorDefecto = Tarifa.cargosPorCategoria[this.categoria];
+
+    if (!cargosPorDefecto) {
+      throw new Error(
+        `No se encontraron cargos por defecto para la categoría ${this.categoria}.`,
+      );
+    }
+
+    console.log(cargosPorDefecto, this.categoria);
     return {
       consumo: cargosPorDefecto.consumo,
       inyeccion: cargosPorDefecto.inyeccion,
-      impuestos: 0, // Valor por defecto de impuestos, ajusta según sea necesario
+      impuestos: 0,
     };
   }
 
@@ -73,6 +88,8 @@ export class Tarifa {
     categoria: TarifaCategoria,
   ): boolean {
     // Mapeo simple entre los nombres de CuadroTarifario y TarifaCategoria
+    console.log('dentro del metodo de mapeo ', nombreCuadro, categoria);
+
     const map: { [key: string]: TarifaCategoria[] } = {
       'T1-R': [
         TarifaCategoria.T1_R1,
@@ -91,6 +108,9 @@ export class Tarifa {
       'TRA-SD': [TarifaCategoria.TRA_SD],
     };
 
-    return map[nombreCuadro]?.includes(categoria) ?? false;
+    const result = map[nombreCuadro]?.includes(categoria);
+    console.log(map[nombreCuadro])
+    console.log(`Resultado de la comparación para ${nombreCuadro}: ${result}`);
+    return result;
   }
 }
