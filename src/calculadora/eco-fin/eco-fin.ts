@@ -27,9 +27,9 @@ export class EcoFin {
     this.solarData = solarData;
     this.tipoDeCambioArs = dto.parametros.economicas.tipoCambioArs;
     this.impuestosProvincialesYTasasMunicipales = tarifaCategory.impuestos;
-    this.costoUsdWpSinIVA = dto.parametros.inversionCostos.costoUsdWp;
+    this.costoUsdWpSinIVA = dto.parametros.inversionCostos.costoUsdWpAplicado;
     this.costoEquipoMedicionUsd =
-      dto.parametros.inversionCostos.equipoDeMedicionUsd;
+      dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
     this.calculateInversionInicial(solarData);
     this.costoMantenimientoUsd =
       dto.parametros.inversionCostos.costoDeMantenimientoInicialUsd;

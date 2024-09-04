@@ -13,7 +13,7 @@ export class SolarController {
   constructor(
     private readonly solarService: SolarService,
     private readonly sheetsService: GoogleSheetsService,
-  ) {}
+  ) { }
 
   @Post('calculate')
   @ApiOperation({

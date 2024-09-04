@@ -9,7 +9,7 @@ import { TasaDescuento } from 'src/interfaces/sheets/tasa-descuento/tasa-descuen
 
 @Injectable()
 export class VariablesOnlineService {
-  
+
   private readonly spreadsheetId: string;
   private readonly rangeCaracteristicas: string;
   private readonly rangeEconomicas: string;
@@ -37,39 +37,40 @@ export class VariablesOnlineService {
       'GOOGLE_SHEET_RANGE_CUADRO_TARIFARIO',
     )
 
-    this.rangeTaxes = this. configService.get<string>(
+    this.rangeTaxes = this.configService.get<string>(
       'GOOGLE_SHEET_RANGE_TAXES'
     )
-    
+
   }
 
   async getCuadroTarifario(googleSheetClient: sheets_v4.Sheets): Promise<CuadroTarifario[]> {
     try {
       const response = await googleSheetClient.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId, 
+        spreadsheetId: this.spreadsheetId,
         range: this.rangeCuadroTarifario,
       });
-      let taxesResponse  = await googleSheetClient.spreadsheets.values.get({
+      
+      
+      let taxesResponse = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: this.rangeTaxes
       })
-      
+
       const rows = response.data.values;
       const taxes = taxesResponse.data.values;
-    
+
       if (!rows || rows.length === 0 || !taxes) {
         throw new Error('No se encontraron datos en el rango especificado.');
       }
 
-
       const cuadroTarifario: CuadroTarifario[] = rows.map((row, index) => {
-        const taxRow = taxes[index]; // Suponiendo que las filas de `taxes` correspondan a `rows`
+        const taxRow = taxes[index]; 
         return {
-          nombre: row[0] as CuadroTarifario['nombre'], 
-          cargoVariableConsumoArsKWh: parseFloat(row[1]), 
-          cargoVariableInyeccionArsKWh: parseFloat(row[2]), 
-          tension: row[3] as CuadroTarifario['tension'], 
-          impuestos: taxRow ? parseFloat(taxRow[0]) / 100 : 0 
+          nombre: row[0] as CuadroTarifario['nombre'],
+          cargoVariableConsumoArsKWh: parseFloat(row[1]),
+          cargoVariableInyeccionArsKWh: parseFloat(row[2]),
+          tension: row[3] as CuadroTarifario['tension'],
+          impuestos: taxRow ? parseFloat(taxRow[0]) / 100 : 0
         };
       });
 
@@ -103,10 +104,13 @@ export class VariablesOnlineService {
       }
 
       const inversionYCostos: InversionCostos = {
-        costoUsdWp: parseFloat(rows[0][1]),
-        equipoDeMedicionUsd: parseFloat(rows[1][1]),
-        costoDeMantenimientoInicialUsd: parseFloat(rows[2][1]),
-        inversion: 1
+        costoUsdWpConIva: parseFloat(rows[0][1]),
+        costoUsdWpAplicado: parseFloat(rows[1][1]),
+        equipoDeMedicionArsSinIva: parseFloat(rows[2][1]),
+        equipoDeMedicionUsdAplicado: parseFloat(rows[3][1]),
+        mantenimiento: parseFloat(rows[4][1]),
+        costoDeMantenimientoInicialUsd: parseFloat(rows[5][1]),
+        inversion: parseFloat(rowsInversion[0][0])
       };
 
       return inversionYCostos;

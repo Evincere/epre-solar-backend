@@ -1,6 +1,9 @@
 export interface InversionCostos {
-    costoUsdWp: number,
-    equipoDeMedicionUsd: number,
+    costoUsdWpConIva: number,
+    costoUsdWpAplicado: number,
+    equipoDeMedicionArsSinIva: number,
+    equipoDeMedicionUsdAplicado: number,
+    mantenimiento: number,
     costoDeMantenimientoInicialUsd: number,
     inversion: number
 }

@@ -22,7 +22,6 @@ export class DatosTecnicos {
     this.degradacionAnualPaneles =
       dto.parametros.caracteristicasSistema.degradacionAnualPanel;
     this.factorEmisiontCO2perMWh = solarData.carbonOffsetFactorKgPerMWh / 1000;
-    console.log(this.factorEmisiontCO2perMWh);
     
     this.proporcionAutoconsumo =
       dto.parametros.caracteristicasSistema.proporcionAutoconsumo;

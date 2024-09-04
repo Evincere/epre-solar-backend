@@ -3,7 +3,6 @@ import { GeneracionFotovoltaica } from '../generacion-fotovoltaica/generacion-fo
 import { SolarData } from '../solar-data/solar-data.interface';
 import { FlujoIngresosMonetarios } from '../flujo-ingresos-monetarios/flujo-ingresos-monetarios.interface';
 import { EmisionesGeiEvitadas } from '../emisiones-gei-evitadas/emisiones-gei-evitadas.interface';
-import { Resultados } from 'src/calculadora/resultados/resultados';
 import { ProyeccionTarifas } from '../proyeccion-tarifas/proyeccion-tarifas.interface';
 import { ResultadosCapitalPropio } from '../resultados-capital-propio/resultados-capital-propio.interface';
 import { IndicadoresFinancieros } from '../indicadores-financieros/indicadores-financieros.interface';

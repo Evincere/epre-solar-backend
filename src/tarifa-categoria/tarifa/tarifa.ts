@@ -1,6 +1,5 @@
 import { CuadroTarifario } from 'src/interfaces/sheets/cuadro-tarifario/cuadro-tarifario.interface';
 import { TarifaCategoria } from '../tarifa-categoria-enum';
-import { log } from 'console';
 
 export class Tarifa {
   categoria: TarifaCategoria;
@@ -32,7 +31,6 @@ export class Tarifa {
     tarifarioActual?: CuadroTarifario[],
   ) {
     this.categoria = categoria;
-    console.log(this.categoria);
     this.potenciaMaximaContratadaKw = potenciaMaximaContratadaKw ?? 0;
 
     const cargos = this.obtenerCargos(tarifarioActual);
@@ -46,13 +44,12 @@ export class Tarifa {
     inyeccion: number;
     impuestos: number;
   } {
-    console.log(tarifarioActual);
 
     if (tarifarioActual) {
       const cuadro = tarifarioActual.find((tarifa) => {
         return tarifa.nombre == this.categoria;
       });
-      console.log(cuadro);
+      // console.log(cuadro);
 
       if (cuadro) {
         return {
@@ -75,7 +72,6 @@ export class Tarifa {
       );
     }
 
-    console.log(cargosPorDefecto, this.categoria);
     return {
       consumo: cargosPorDefecto.consumo,
       inyeccion: cargosPorDefecto.inyeccion,
@@ -83,34 +79,4 @@ export class Tarifa {
     };
   }
 
-  private matchCategoriaConCuadro(
-    nombreCuadro: string,
-    categoria: TarifaCategoria,
-  ): boolean {
-    // Mapeo simple entre los nombres de CuadroTarifario y TarifaCategoria
-    console.log('dentro del metodo de mapeo ', nombreCuadro, categoria);
-
-    const map: { [key: string]: TarifaCategoria[] } = {
-      'T1-R': [
-        TarifaCategoria.T1_R1,
-        TarifaCategoria.T1_R2,
-        TarifaCategoria.T1_R3,
-      ],
-      'T1-G': [
-        TarifaCategoria.T1_G1,
-        TarifaCategoria.T1_G2,
-        TarifaCategoria.T1_G3,
-      ],
-      'T2-SMP': [TarifaCategoria.T2_SMP],
-      'T2-CMP': [TarifaCategoria.T2_CMP],
-      'T3-BT': [TarifaCategoria.T3_BT],
-      'T3-MT': [TarifaCategoria.T3_MT_13_2_KV, TarifaCategoria.T3_MT_33_KV],
-      'TRA-SD': [TarifaCategoria.TRA_SD],
-    };
-
-    const result = map[nombreCuadro]?.includes(categoria);
-    console.log(map[nombreCuadro])
-    console.log(`Resultado de la comparación para ${nombreCuadro}: ${result}`);
-    return result;
-  }
 }
