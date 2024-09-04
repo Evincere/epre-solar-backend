@@ -8,6 +8,7 @@ import { ResultadosCapitalPropio } from '../resultados-capital-propio/resultados
 import { IndicadoresFinancieros } from '../indicadores-financieros/indicadores-financieros.interface';
 
 export interface ResultadosDto {
+  mensaje?: string;
   solarData: SolarData;
   periodoVeinteanalGeneracionFotovoltaica: GeneracionFotovoltaica[];
   periodoVeinteanalFlujoEnergia: FlujoEnergia[];
