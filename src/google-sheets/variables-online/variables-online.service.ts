@@ -20,6 +20,7 @@ export class VariablesOnlineService {
 
   constructor(private readonly configService: ConfigService) {
     this.spreadsheetId = this.configService.get<string>('GOOGLE_SHEET_ID');
+    
     this.rangeCaracteristicas = this.configService.get<string>(
       'GOOGLE_SHEET_RANGE_CARACTERISTICAS',
     );
@@ -50,7 +51,6 @@ export class VariablesOnlineService {
         range: this.rangeCuadroTarifario,
       });
       
-      
       let taxesResponse = await googleSheetClient.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: this.rangeTaxes
@@ -67,10 +67,10 @@ export class VariablesOnlineService {
         const taxRow = taxes[index]; 
         return {
           nombre: row[0] as CuadroTarifario['nombre'],
-          cargoVariableConsumoArsKWh: parseFloat(row[1]),
-          cargoVariableInyeccionArsKWh: parseFloat(row[2]),
+          cargoVariableConsumoArsKWh: this.parseFloatWithFormat(row[1]),
+          cargoVariableInyeccionArsKWh: this.parseFloatWithFormat(row[2]),
           tension: row[3] as CuadroTarifario['tension'],
-          impuestos: taxRow ? parseFloat(taxRow[0]) / 100 : 0
+          impuestos: taxRow ? this.parseFloatWithFormat(taxRow[0]) / 100 : 0
         };
       });
 
@@ -104,13 +104,13 @@ export class VariablesOnlineService {
       }
 
       const inversionYCostos: InversionCostos = {
-        costoUsdWpConIva: parseFloat(rows[0][1]),
-        costoUsdWpAplicado: parseFloat(rows[1][1]),
-        equipoDeMedicionArsSinIva: parseFloat(rows[2][1]),
-        equipoDeMedicionUsdAplicado: parseFloat(rows[3][1]),
-        mantenimiento: parseFloat(rows[4][1]),
-        costoDeMantenimientoInicialUsd: parseFloat(rows[5][1]),
-        inversion: parseFloat(rowsInversion[0][0])
+        costoUsdWpConIva: this.parseFloatWithFormat(rows[0][1]),
+        costoUsdWpAplicado: this.parseFloatWithFormat(rows[1][1]),
+        equipoDeMedicionArsSinIva: this.parseFloatWithFormat(rows[2][1]),
+        equipoDeMedicionUsdAplicado: this.parseFloatWithFormat(rows[3][1]),
+        mantenimiento: this.parseFloatWithFormat(rows[4][1]),
+        costoDeMantenimientoInicialUsd: this.parseFloatWithFormat(rows[5][1]),
+        inversion: this.parseFloatWithFormat(rowsInversion[0][0])
       };
 
       return inversionYCostos;
@@ -136,10 +136,10 @@ export class VariablesOnlineService {
       }
 
       const caracteristicasSistema: CaracteristicasSistema = {
-        eficienciaInstalacion: this.parsePercentage(rows[0][1]) / 100,
-        degradacionAnualPanel: this.parsePercentage(rows[1][1]) / 100,
-        proporcionAutoconsumo: this.parsePercentage(rows[2][1]) / 100,
-        proporcionInyeccion: (100 - this.parsePercentage(rows[2][1])) / 100,
+        eficienciaInstalacion: this.parseFloatWithFormat(rows[0][1]) / 100,
+        degradacionAnualPanel: this.parseFloatWithFormat(rows[1][1]) / 100,
+        proporcionAutoconsumo: this.parseFloatWithFormat(rows[2][1]) / 100,
+        proporcionInyeccion: (100 - this.parseFloatWithFormat(rows[2][1])) / 100,
       };
 
       return caracteristicasSistema;
@@ -164,14 +164,10 @@ export class VariablesOnlineService {
         throw new Error('No se encontraron datos en el rango especificado.');
       }
 
-      const parseEconomicas = (value: string): number => {
-        return parseFloat(value);
-      };
-
       const economicas: Economicas = {
-        tipoCambioArs: parseEconomicas(rows[0][1]),
-        tasaInflacionUsd: parseEconomicas(rows[1][1]) / 100,
-        tasaDescuentoFlujoFondosUsd: parseEconomicas(rows[2][1]) / 100
+        tipoCambioArs: this.parseFloatWithFormat(rows[0][1]),
+        tasaInflacionUsd: this.parseFloatWithFormat(rows[1][1]) / 100,
+        tasaDescuentoFlujoFondosUsd: this.parseFloatWithFormat(rows[2][1]) / 100
       };
 
       return economicas;
@@ -180,7 +176,10 @@ export class VariablesOnlineService {
     }
   }
 
-  private parsePercentage(value: string): number {
-    return parseFloat(value.replace('%', '').trim());
+  private parseFloatWithFormat(value: string): number {
+    if (!value) return 0; 
+    const formattedValue = value.replace('%', '').replace(',', '.').trim();
+    const parsedValue = parseFloat(formattedValue);
+    return isNaN(parsedValue) ? 0 : parsedValue; 
   }
 }

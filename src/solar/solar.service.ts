@@ -58,7 +58,7 @@ export class SolarService {
 
     const solarData: SolarData = {
       annualConsumption: dto.annualConsumption,
-      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * dto.parametros?.caracteristicasSistema?.eficienciaInstalacion ?? 0.85,
+      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.95,
       panels: {
         panelsCountApi: solarPanelConfig.panelsCount,
         maxPanelsPerSuperface: dto.panelsSupported,

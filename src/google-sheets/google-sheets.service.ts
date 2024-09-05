@@ -74,9 +74,9 @@ export class GoogleSheetsService implements OnModuleInit {
     }
   }
 
-  private getCuadroTarifario(): Promise<CuadroTarifario[]> {
+  private async getCuadroTarifario(): Promise<CuadroTarifario[]> {
     try {
-      return this.variablesOnlineService.getCuadroTarifario(
+      return await this.variablesOnlineService.getCuadroTarifario(
         this.googleSheetClient,
       );
     } catch (error) {
@@ -85,9 +85,9 @@ export class GoogleSheetsService implements OnModuleInit {
     }
   }
 
-  private getInversionYCostos(): Promise<InversionCostos> {
+  private async getInversionYCostos(): Promise<InversionCostos> {
     try {
-      return this.variablesOnlineService.getInversionYCostos(
+      return await this.variablesOnlineService.getInversionYCostos(
         this.googleSheetClient,
       );
     } catch (error) {
@@ -98,9 +98,9 @@ export class GoogleSheetsService implements OnModuleInit {
     }
   }
 
-  private getEconomicas(): Promise<Economicas> {
+  private async getEconomicas(): Promise<Economicas> {
     try {
-      return this.variablesOnlineService.getEconomicas(this.googleSheetClient);
+      return await this.variablesOnlineService.getEconomicas(this.googleSheetClient);
     } catch (error) {
       console.error('Error al obtener la cotización:', error);
       throw new Error('No se pudo obtener la cotización.');
@@ -109,7 +109,7 @@ export class GoogleSheetsService implements OnModuleInit {
 
   private async getCaracteristicasSistema(): Promise<CaracteristicasSistema> {
     try {
-      return this.variablesOnlineService.getCaracteristicasSistema(
+      return await this.variablesOnlineService.getCaracteristicasSistema(
         this.googleSheetClient,
       );
     } catch (error) {
