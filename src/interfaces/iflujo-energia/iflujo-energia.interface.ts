@@ -1,5 +1,5 @@
 export interface IflujoEnergia {
     anio: number,
-    energiaAutoconsumidaKwhAnio: number,
-    energiaInyectadaKwhAnio: number
+    energiaAutoconsumidakWhAnio: number,
+    energiaInyectadakWhAnio: number
 }

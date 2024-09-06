@@ -1,5 +1,4 @@
 import { FlujoIngresosMonetarios } from 'src/interfaces/flujo-ingresos-monetarios/flujo-ingresos-monetarios.interface';
-import { FlujoEnergia } from '../datos-tecnicos/flujo-energia/flujo-energia';
 import { ProyeccionTarifas } from 'src/interfaces/proyeccion-tarifas/proyeccion-tarifas.interface';
 import { IflujoEnergia } from 'src/interfaces/iflujo-energia/iflujo-energia.interface';
 import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
@@ -30,68 +29,59 @@ export class EcoFin {
     this.costoUsdWpSinIVA = dto.parametros.inversionCostos.costoUsdWpAplicado;
     this.costoEquipoMedicionUsd =
       dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
-    this.calculateInversionInicial(solarData);
+    this.inversionUsd = dto.parametros.inversionCostos.inversion;
     this.costoMantenimientoUsd =
       dto.parametros.inversionCostos.costoDeMantenimientoInicialUsd;
   }
 
-  calculateInversionInicial(solarData: SolarData) {
-    this.dto.parametros.inversionCostos.inversion = (
-      this.costoUsdWpSinIVA *
-      (solarData.panels.panelCapacityW * solarData.panels.panelsCountApi +
-        solarData.carbonOffsetFactorKgPerMWh / 1000)
-    )
-  }
-
   getFlujoIngresosMonetarios(
-    periodoVeinteanalFlujoEnergia: IflujoEnergia[],
-    tarifaConsumoEnergiaArs: number,
-    tarifaInyeccionEnergiaArs: number,
+    periodoVeinteanalFlujoEnergia: IflujoEnergia[], periodoVeinteanalProyeccionTarifas: ProyeccionTarifas[],
   ): FlujoIngresosMonetarios[] {
     const periodoVeinteanal: FlujoIngresosMonetarios[] = [];
-    const cargoVariableConsumoUsd: number =
-      tarifaConsumoEnergiaArs / this.tipoDeCambioArs;
-    const cargoVariableInyeccionUsd: number =
-      tarifaInyeccionEnergiaArs / this.tipoDeCambioArs;
+    
     // Generación del primer año
     periodoVeinteanal.push({
       year: periodoVeinteanalFlujoEnergia[0].anio,
       ahorroEnElectricidadTotalUsd:
-        periodoVeinteanalFlujoEnergia[0].energiaAutoconsumidaKwhAnio *
-        cargoVariableConsumoUsd *
+        periodoVeinteanalFlujoEnergia[0].energiaAutoconsumidakWhAnio *
+        periodoVeinteanalProyeccionTarifas[1]?.cargoVariableConsumoUsdkWh *
         (1 + this.impuestosProvincialesYTasasMunicipales),
       ingresoPorInyeccionElectricaUsd:
-        periodoVeinteanalFlujoEnergia[0].energiaInyectadaKwhAnio *
-        cargoVariableInyeccionUsd,
+        periodoVeinteanalFlujoEnergia[0].energiaInyectadakWhAnio *
+        periodoVeinteanalProyeccionTarifas[1]?.cargoVariableInyeccionUsdKwh,
     });
-
+    
     // Generación de los siguientes 19 años
     for (let i = 1; i < 20; i++) {
       const previousYearAutoconsumida =
-        periodoVeinteanalFlujoEnergia[i].energiaAutoconsumidaKwhAnio;
+        periodoVeinteanalFlujoEnergia[i].energiaAutoconsumidakWhAnio;
       const previousYearInyectada =
-        periodoVeinteanalFlujoEnergia[i].energiaInyectadaKwhAnio;
-
+        periodoVeinteanalFlujoEnergia[i].energiaInyectadakWhAnio;
+    
+      const tarifa = periodoVeinteanalProyeccionTarifas[i + 1]
+        ? periodoVeinteanalProyeccionTarifas[i + 1]
+        : periodoVeinteanalProyeccionTarifas[periodoVeinteanalProyeccionTarifas.length - 1]; // Último valor disponible
+    
       periodoVeinteanal.push({
         year: periodoVeinteanalFlujoEnergia[i].anio,
         ahorroEnElectricidadTotalUsd:
           previousYearAutoconsumida *
-          cargoVariableConsumoUsd *
+          tarifa.cargoVariableConsumoUsdkWh *
           (1 + this.impuestosProvincialesYTasasMunicipales),
         ingresoPorInyeccionElectricaUsd:
-          previousYearInyectada * cargoVariableInyeccionUsd,
+          previousYearInyectada * tarifa.cargoVariableInyeccionUsdKwh,
       });
     }
-
+    
     return periodoVeinteanal;
-  }
+  }    
 
   getProyeccionDeTarifas(tarifaCategory: Tarifa): ProyeccionTarifas[] {
     const periodoVeinteanal: ProyeccionTarifas[] = [];
 
     periodoVeinteanal.push({
       year: this.actualYear,
-      cargoVariableConsumoUsdKwh:
+      cargoVariableConsumoUsdkWh:
         tarifaCategory.tarifaConsumoEnergiaArs / this.tipoDeCambioArs,
       cargoVariableInyeccionUsdKwh:
         tarifaCategory.tarifaInyeccionEnergiaArs / this.tipoDeCambioArs,
@@ -103,8 +93,8 @@ export class EcoFin {
       const previousProyeccion = periodoVeinteanal[i - 1];
       periodoVeinteanal.push({
         year: previousProyeccion.year + 1,
-        cargoVariableConsumoUsdKwh:
-          previousProyeccion.cargoVariableConsumoUsdKwh *
+        cargoVariableConsumoUsdkWh:
+          previousProyeccion.cargoVariableConsumoUsdkWh *
           (1 + this.dto.parametros.economicas.tasaInflacionUsd),
         cargoVariableInyeccionUsdKwh:
           previousProyeccion.cargoVariableInyeccionUsdKwh *

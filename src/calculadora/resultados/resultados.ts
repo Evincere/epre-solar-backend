@@ -5,6 +5,7 @@ import { EcoFin } from '../eco-fin/eco-fin';
 import { FlujoIngresosMonetarios } from 'src/interfaces/flujo-ingresos-monetarios/flujo-ingresos-monetarios.interface';
 import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
 import { CostoMantenimiento } from 'src/interfaces/costo-mantenimiento/costo-mantenimiento.interface';
+import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
 
 export class Resultados {
   private readonly tasaDescuento = 10 / 100;
@@ -12,14 +13,17 @@ export class Resultados {
   private _indicadoresFinancieros: IndicadoresFinancieros;
   private _emisionesGEIEvitadas: EmisionesGeiEvitadas[];
   private dto: SolarCalculationDto;
+  private solarData: SolarData;
 
   constructor(
     periodoVeinteanalFlujoIngresosMonetarios: FlujoIngresosMonetarios[],
     periodoVeinteanalEmisionesGEIEvitadas: EmisionesGeiEvitadas[],
     periodoVeinteanalCostoMantenimiento: CostoMantenimiento[],
-    dto: SolarCalculationDto
+    solarData: SolarData,
+    dto?: SolarCalculationDto
   ) {
-    this.dto = dto
+    this.solarData = solarData;
+    this.dto = dto;
     
     this.generarResultadosCapitalPropio(
       periodoVeinteanalFlujoIngresosMonetarios,
@@ -34,6 +38,8 @@ export class Resultados {
     periodoVeinteanalCostoMantenimiento: CostoMantenimiento[]
   ): void {
     const periodoVeinteanal: ResultadosCapitalPropio[] = [];
+    const inversion = this.calculateInversion(this.dto, this.solarData);
+    this.dto.parametros.inversionCostos.inversion = inversion;
 
     periodoVeinteanal.push({
       year: new Date().getFullYear(),
@@ -45,7 +51,7 @@ export class Resultados {
     });
 
     for (let i = 1; i < 20; i++) {
-      const year = periodoVeinteanalFlujoIngresosMonetarios[i].year;
+      const year = periodoVeinteanal[i - 1].year + 1;
 
       const currentFlujoIngresos =
         periodoVeinteanalFlujoIngresosMonetarios[i - 1]
@@ -71,6 +77,20 @@ export class Resultados {
       });
     }
     this.casoConCapitalPropio = periodoVeinteanal;
+  }
+
+  private calculateInversion(dto: SolarCalculationDto, solarData: SolarData): number {
+    const maxPanelsPerSuperface = solarData.panels.maxPanelsPerSuperface;
+    const panelsApi = solarData.panels.panelsCountApi;
+    const panelsSelected = solarData.panels.panelsSelected ?? panelsApi;
+
+    const costoUsdWp = dto.parametros.inversionCostos.costoUsdWpAplicado;
+   
+    const instalacionCapacityW = panelsSelected * solarData.panels.panelCapacityW;
+    const costoEquipoMedicionUsd = dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
+    console.log(costoUsdWp, solarData.panels.panelCapacityW, panelsSelected, costoEquipoMedicionUsd);
+    
+    return (costoUsdWp * instalacionCapacityW) + costoEquipoMedicionUsd;
   }
 
   private generarIndicadoresFinancieros(): void {
@@ -123,7 +143,7 @@ export class Resultados {
   private calcularPlazoRetorno(): number {
     for (let i = 0; i < this.casoConCapitalPropio.length; i++) {
       if (this.casoConCapitalPropio[i].flujoAcumulado > 0) {
-        return i + 1;
+        return i;
       }
     }
     return -1;

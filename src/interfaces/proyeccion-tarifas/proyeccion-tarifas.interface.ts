@@ -1,6 +1,6 @@
 export interface ProyeccionTarifas {
     year: number,
-    cargoVariableConsumoUsdKwh: number,
+    cargoVariableConsumoUsdkWh: number,
     cargoVariableInyeccionUsdKwh: number,
     tasaAnualAumentoDeTarifas: number
 }

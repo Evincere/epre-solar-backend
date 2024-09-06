@@ -13,7 +13,7 @@ export class CalculadoraService {
   private resultadosFinancieros: Resultados;
   constructor() {}
   // Método principal para calcular el ahorro energético
-  calculateEnergySavings(solarData: SolarData, dto?: SolarCalculationDto): any {
+  calculateEnergySavings(solarData: SolarData, solarCalculationWithParameters?: SolarCalculationDto): any {
     // Obtener datos del API de Solar
     const yearlyEnergyACKwh: number = solarData.yearlyEnergyAcKwh;
     const panelsCount: number = solarData.panels.panelsCountApi;
@@ -23,12 +23,12 @@ export class CalculadoraService {
       solarData.carbonOffsetFactorKgPerMWh / 1000;
     const tarifaCategory: Tarifa = new Tarifa(
       solarData.tarifaCategory,
-      dto.potenciaMaxAsignada,
-      dto.parametros?.cuadroTarifarioActual,
+      solarCalculationWithParameters.potenciaMaxAsignada,
+      solarCalculationWithParameters.parametros?.cuadroTarifarioActual,
     );
     const annualConsumption = solarData.annualConsumption;
 
-    this.datosTecnicos = new DatosTecnicos(dto, solarData);
+    this.datosTecnicos = new DatosTecnicos(solarCalculationWithParameters, solarData);
 
     const periodoVeinteanalGeneracionFotovoltaica =
       this.datosTecnicos.getGeneracionFotovoltaica(yearlyEnergyACKwh);
@@ -44,7 +44,7 @@ export class CalculadoraService {
         periodoVeinteanalGeneracionFotovoltaica,
       );
 
-    this.ecoFin = new EcoFin(dto, solarData, tarifaCategory);
+    this.ecoFin = new EcoFin(solarCalculationWithParameters, solarData, tarifaCategory);
 
     const periodoVeinteanalProyeccionTarifas =
       this.ecoFin.getProyeccionDeTarifas(tarifaCategory);
@@ -52,8 +52,7 @@ export class CalculadoraService {
     const periodoVeinteanalFlujoIngresosMonetarios =
       this.ecoFin.getFlujoIngresosMonetarios(
         periodoVeinteanalFlujoEnergia,
-        tarifaCategory.tarifaConsumoEnergiaArs,
-        tarifaCategory.tarifaInyeccionEnergiaArs,
+        periodoVeinteanalProyeccionTarifas
       );
 
     const periodoVeinteanalCostoMantenimiento =
@@ -63,7 +62,8 @@ export class CalculadoraService {
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
       periodoVeinteanalCostoMantenimiento,
-      dto,
+      solarData,
+      solarCalculationWithParameters,
     );
 
     return {

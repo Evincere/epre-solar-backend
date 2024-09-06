@@ -16,6 +16,8 @@ export class SolarCalculationDto {
     @ApiProperty()
     panelsSupported: number;
     @ApiProperty()
+    panelsSelected?: number;
+    @ApiProperty()
     potenciaMaxAsignada: number;
     parametros?: Parametros
   }

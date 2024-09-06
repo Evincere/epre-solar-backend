@@ -9,6 +9,7 @@ import { Economicas } from 'src/interfaces/sheets/cotizacion/economicas.interfac
 import { CuadroTarifario } from 'src/interfaces/sheets/cuadro-tarifario/cuadro-tarifario.interface';
 import { Parametros } from 'src/interfaces/sheets/parametros/parametros.interface';
 import { CalculadoraService } from 'src/calculadora/calculadora.service';
+import { TarifaCategoria } from 'src/tarifa-categoria/tarifa-categoria-enum';
 
 @Injectable()
 export class GoogleSheetsService implements OnModuleInit {
@@ -54,8 +55,8 @@ export class GoogleSheetsService implements OnModuleInit {
           (caracteristicas) => caracteristicas,
         );
       const economicas = await this.getEconomicas();
-      const inversionCostos = await this.getInversionYCostos();
-      const cuadroTarifarioActual = await this.getCuadroTarifario();
+      const inversionCostos = await this.getInversionYCostos(economicas, solarCalculationDto);
+      const cuadroTarifarioActual = await this.getCuadroTarifario(economicas);
       const parametrosActuales: Parametros = {
         caracteristicasSistema,
         inversionCostos,
@@ -74,10 +75,11 @@ export class GoogleSheetsService implements OnModuleInit {
     }
   }
 
-  private async getCuadroTarifario(): Promise<CuadroTarifario[]> {
+  private async getCuadroTarifario(economicas: Economicas): Promise<CuadroTarifario[]> {
     try {
       return await this.variablesOnlineService.getCuadroTarifario(
         this.googleSheetClient,
+        economicas
       );
     } catch (error) {
       console.error('Error al obtener los cuadros tarifarios:', error);
@@ -85,10 +87,11 @@ export class GoogleSheetsService implements OnModuleInit {
     }
   }
 
-  private async getInversionYCostos(): Promise<InversionCostos> {
+  private async getInversionYCostos(economicas: Economicas, solarCalculationDto: SolarCalculationDto): Promise<InversionCostos> {
     try {
       return await this.variablesOnlineService.getInversionYCostos(
-        this.googleSheetClient,
+        this.googleSheetClient, 
+        economicas, solarCalculationDto
       );
     } catch (error) {
       console.error('Error al obtener los datos de inversion y costos:', error);

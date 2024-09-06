@@ -50,18 +50,21 @@ export class SolarService {
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
-
+    
+    
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,
       dto.panelsSupported,
+      dto.panelsSelected
     );
-
+    console.log("solarPanelConfig ", solarPanelConfig);
     const solarData: SolarData = {
       annualConsumption: dto.annualConsumption,
       yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.95,
       panels: {
         panelsCountApi: solarPanelConfig.panelsCount,
         maxPanelsPerSuperface: dto.panelsSupported,
+        panelsSelected: dto.panelsSelected,
         panelCapacityW: solarDataApi.solarPotential.panelCapacityWatts,
         panelSize: {
           height: solarDataApi.solarPotential.panelHeightMeters,
@@ -105,15 +108,15 @@ export class SolarService {
   }
 
   private calculatePanelConfig(
-    solarPotential: { solarPanelConfigs: any },
-    panelsSupported: number,
+solarPotential: { solarPanelConfigs: any; }, panelsSupported: number, panelsSelected?: number,
   ): PanelConfig {
     if (panelsSupported < 4) {
       panelsSupported = 4;
     }
     const configs = solarPotential.solarPanelConfigs;
+    const panelsCount = panelsSelected ?? panelsSupported;
     const index = configs.findIndex(
-      (element: PanelConfig) => element.panelsCount === panelsSupported,
+      (element: PanelConfig) => element.panelsCount === panelsCount,
     );
     // Si no se encuentra ningún elemento que cumpla con la condición, devuelve null
     if (index === -1) {

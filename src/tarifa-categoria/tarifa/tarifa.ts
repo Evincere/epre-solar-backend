@@ -3,7 +3,7 @@ import { TarifaCategoria } from '../tarifa-categoria-enum';
 
 export class Tarifa {
   categoria: TarifaCategoria;
-  potenciaMaximaContratadaKw?: number;
+  potenciaMaximaContratadakW?: number;
   tarifaConsumoEnergiaArs: number;
   tarifaInyeccionEnergiaArs: number;
   impuestos: number;
@@ -27,13 +27,14 @@ export class Tarifa {
 
   constructor(
     categoria: TarifaCategoria,
-    potenciaMaximaContratadaKw: number,
+    potenciaMaximaContratadakW: number,
     tarifarioActual?: CuadroTarifario[],
   ) {
     this.categoria = categoria;
-    this.potenciaMaximaContratadaKw = potenciaMaximaContratadaKw ?? 0;
+    this.potenciaMaximaContratadakW = potenciaMaximaContratadakW ?? 0;
 
     const cargos = this.obtenerCargos(tarifarioActual);
+    
     this.tarifaConsumoEnergiaArs = cargos.consumo;
     this.tarifaInyeccionEnergiaArs = cargos.inyeccion;
     this.impuestos = cargos.impuestos;

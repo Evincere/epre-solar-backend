@@ -22,7 +22,7 @@ export class DatosTecnicos {
     this.degradacionAnualPaneles =
       dto.parametros.caracteristicasSistema.degradacionAnualPanel;
     this.factorEmisiontCO2perMWh = solarData.carbonOffsetFactorKgPerMWh / 1000;
-    
+
     this.proporcionAutoconsumo =
       dto.parametros.caracteristicasSistema.proporcionAutoconsumo;
     this.proporcionInyeccion =
@@ -64,20 +64,20 @@ export class DatosTecnicos {
 
     periodoVeinteanal.push({
       anio: this.actualYear + 1,
-      energiaAutoconsumidaKwhAnio:
+      energiaAutoconsumidakWhAnio:
         annualConsumption >
-        periodoVeinteanalGeneracionFotovoltaica[0].generacionFotovoltaicaKWh *
+          periodoVeinteanalGeneracionFotovoltaica[0].generacionFotovoltaicaKWh *
           this.proporcionAutoconsumo
           ? periodoVeinteanalGeneracionFotovoltaica[0]
-              .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
+            .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
           : annualConsumption,
-      energiaInyectadaKwhAnio:
+      energiaInyectadakWhAnio:
         periodoVeinteanalGeneracionFotovoltaica[0].generacionFotovoltaicaKWh -
         (annualConsumption >
-        periodoVeinteanalGeneracionFotovoltaica[0].generacionFotovoltaicaKWh *
+          periodoVeinteanalGeneracionFotovoltaica[0].generacionFotovoltaicaKWh *
           this.proporcionAutoconsumo
           ? periodoVeinteanalGeneracionFotovoltaica[0]
-              .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
+            .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
           : annualConsumption),
     });
 
@@ -88,20 +88,20 @@ export class DatosTecnicos {
 
       periodoVeinteanal.push({
         anio: currentYear,
-        energiaAutoconsumidaKwhAnio:
+        energiaAutoconsumidakWhAnio:
           annualConsumption >
-          periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh *
+            periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh *
             this.proporcionAutoconsumo
             ? periodoVeinteanalGeneracionFotovoltaica[i]
-                .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
+              .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
             : annualConsumption,
-        energiaInyectadaKwhAnio:
+        energiaInyectadakWhAnio:
           periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh -
           (annualConsumption >
-          periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh *
+            periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh *
             this.proporcionAutoconsumo
             ? periodoVeinteanalGeneracionFotovoltaica[i]
-                .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
+              .generacionFotovoltaicaKWh * this.proporcionAutoconsumo
             : annualConsumption),
       });
     }
@@ -126,14 +126,14 @@ export class DatosTecnicos {
         periodoVeinteanalGeneracionFotovoltaica[i].generacionFotovoltaicaKWh;
       const emisionesTonCO2 =
         currentYearGeneration * (this.factorEmisiontCO2perMWh / 1000);
-    
+
       periodoVeinteanal.push({
         year: periodoVeinteanalGeneracionFotovoltaica[i].anio,
         emisionesTonCO2,
       });
     }
 
-    
+
     return periodoVeinteanal;
   }
 }
