@@ -29,16 +29,24 @@ export class EcoFin {
     this.costoUsdWpSinIVA = dto.parametros.inversionCostos.costoUsdWpAplicado;
     this.costoEquipoMedicionUsd =
       dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
-    this.inversionUsd = dto.parametros.inversionCostos.inversion;
-    this.costoMantenimientoUsd =
-      dto.parametros.inversionCostos.costoDeMantenimientoInicialUsd;
+
+    this.inversionUsd = this.calculateInversion(dto, solarData);
+
+    this.costoMantenimientoUsd = this.calculateCostoMantenimientoInicialUsd(
+      this.inversionUsd,
+    );
+  }
+
+  calculateCostoMantenimientoInicialUsd(inversionUsd: number): number {
+    return inversionUsd * 0.01;
   }
 
   getFlujoIngresosMonetarios(
-    periodoVeinteanalFlujoEnergia: IflujoEnergia[], periodoVeinteanalProyeccionTarifas: ProyeccionTarifas[],
+    periodoVeinteanalFlujoEnergia: IflujoEnergia[],
+    periodoVeinteanalProyeccionTarifas: ProyeccionTarifas[],
   ): FlujoIngresosMonetarios[] {
     const periodoVeinteanal: FlujoIngresosMonetarios[] = [];
-    
+
     // Generación del primer año
     periodoVeinteanal.push({
       year: periodoVeinteanalFlujoEnergia[0].anio,
@@ -50,18 +58,20 @@ export class EcoFin {
         periodoVeinteanalFlujoEnergia[0].energiaInyectadakWhAnio *
         periodoVeinteanalProyeccionTarifas[1]?.cargoVariableInyeccionUsdKwh,
     });
-    
+
     // Generación de los siguientes 19 años
     for (let i = 1; i < 20; i++) {
       const previousYearAutoconsumida =
         periodoVeinteanalFlujoEnergia[i].energiaAutoconsumidakWhAnio;
       const previousYearInyectada =
         periodoVeinteanalFlujoEnergia[i].energiaInyectadakWhAnio;
-    
+
       const tarifa = periodoVeinteanalProyeccionTarifas[i + 1]
         ? periodoVeinteanalProyeccionTarifas[i + 1]
-        : periodoVeinteanalProyeccionTarifas[periodoVeinteanalProyeccionTarifas.length - 1]; // Último valor disponible
-    
+        : periodoVeinteanalProyeccionTarifas[
+            periodoVeinteanalProyeccionTarifas.length - 1
+          ]; // Último valor disponible
+
       periodoVeinteanal.push({
         year: periodoVeinteanalFlujoEnergia[i].anio,
         ahorroEnElectricidadTotalUsd:
@@ -72,9 +82,9 @@ export class EcoFin {
           previousYearInyectada * tarifa.cargoVariableInyeccionUsdKwh,
       });
     }
-    
+
     return periodoVeinteanal;
-  }    
+  }
 
   getProyeccionDeTarifas(tarifaCategory: Tarifa): ProyeccionTarifas[] {
     const periodoVeinteanal: ProyeccionTarifas[] = [];
@@ -126,5 +136,30 @@ export class EcoFin {
     }
 
     return periodoVeinteanal;
+  }
+
+  private calculateInversion(
+    dto: SolarCalculationDto,
+    solarData: SolarData,
+  ): number {
+    const panelsApi = solarData.panels.panelsCountApi;
+    const panelsSelected = solarData.panels.panelsSelected ?? panelsApi;
+
+    const costoUsdWp = dto.parametros.inversionCostos.costoUsdWpAplicado;
+
+    const instalacionCapacityW =
+      panelsSelected * solarData.panels.panelCapacityW;
+    const costoEquipoMedicionUsd =
+      dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
+    console.log(
+      costoUsdWp,
+      solarData.panels.panelCapacityW,
+      panelsSelected,
+      costoEquipoMedicionUsd,
+    );
+    const inversionInicial =
+      costoUsdWp * instalacionCapacityW + costoEquipoMedicionUsd;
+    this.dto.parametros.inversionCostos.inversion = inversionInicial;
+    return inversionInicial;
   }
 }

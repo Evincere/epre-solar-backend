@@ -55,7 +55,7 @@ export class CalculadoraService {
         periodoVeinteanalProyeccionTarifas
       );
 
-    const periodoVeinteanalCostoMantenimiento =
+      const periodoVeinteanalCostoMantenimiento =
       this.ecoFin.getCostoMantenimiento();
 
     this.resultadosFinancieros = new Resultados(

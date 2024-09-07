@@ -24,7 +24,7 @@ export class Resultados {
   ) {
     this.solarData = solarData;
     this.dto = dto;
-    
+
     this.generarResultadosCapitalPropio(
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalCostoMantenimiento
@@ -38,8 +38,6 @@ export class Resultados {
     periodoVeinteanalCostoMantenimiento: CostoMantenimiento[]
   ): void {
     const periodoVeinteanal: ResultadosCapitalPropio[] = [];
-    const inversion = this.calculateInversion(this.dto, this.solarData);
-    this.dto.parametros.inversionCostos.inversion = inversion;
 
     periodoVeinteanal.push({
       year: new Date().getFullYear(),
@@ -60,7 +58,7 @@ export class Resultados {
           .ingresoPorInyeccionElectricaUsd;
 
       const currentFlujoEgresos =
-      periodoVeinteanalCostoMantenimiento[i].costoUsd
+        periodoVeinteanalCostoMantenimiento[i].costoUsd
 
       const currentFlujoFondos =
         currentFlujoIngresos - currentFlujoEgresos;
@@ -79,25 +77,11 @@ export class Resultados {
     this.casoConCapitalPropio = periodoVeinteanal;
   }
 
-  private calculateInversion(dto: SolarCalculationDto, solarData: SolarData): number {
-    const maxPanelsPerSuperface = solarData.panels.maxPanelsPerSuperface;
-    const panelsApi = solarData.panels.panelsCountApi;
-    const panelsSelected = solarData.panels.panelsSelected ?? panelsApi;
-
-    const costoUsdWp = dto.parametros.inversionCostos.costoUsdWpAplicado;
-   
-    const instalacionCapacityW = panelsSelected * solarData.panels.panelCapacityW;
-    const costoEquipoMedicionUsd = dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
-    console.log(costoUsdWp, solarData.panels.panelCapacityW, panelsSelected, costoEquipoMedicionUsd);
-    
-    return (costoUsdWp * instalacionCapacityW) + costoEquipoMedicionUsd;
-  }
-
   private generarIndicadoresFinancieros(): void {
     this.indicadoresFinancieros = {
       VAN: this.calcularNPV(),
       TIR: this.calcularTIR(),
-      payBackSimpleYears: this.calcularPlazoRetorno(),
+      payBackMonths: this.calcularPlazoRetorno(),
     };
   }
 
@@ -141,12 +125,24 @@ export class Resultados {
   }
 
   private calcularPlazoRetorno(): number {
-    for (let i = 0; i < this.casoConCapitalPropio.length; i++) {
-      if (this.casoConCapitalPropio[i].flujoAcumulado > 0) {
-        return i;
+    for (let i = 1; i < this.casoConCapitalPropio.length; i++) {
+      const flujoActual = this.casoConCapitalPropio[i].flujoAcumulado;
+      const flujoAnterior = this.casoConCapitalPropio[i - 1].flujoAcumulado;
+
+      // Si cruzamos de negativo a positivo en este año
+      if (flujoAnterior <= 0 && flujoActual > 0) {
+        // Interpolar entre el flujo anterior y el actual para obtener la fracción del año
+        const fraccionAnual = flujoAnterior / (flujoAnterior - flujoActual);
+
+        // Convertir esa fracción del año en meses
+        const meses = fraccionAnual * 12;
+
+        // Retornar el índice en años y la fracción en meses
+        return (i - 1) * 12 + meses;
       }
     }
-    return -1;
+
+    return -1; // Si no se encuentra un retorno positivo
   }
 
   public get casoConCapitalPropio(): ResultadosCapitalPropio[] {

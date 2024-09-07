@@ -57,7 +57,7 @@ export class SolarService {
       dto.panelsSupported,
       dto.panelsSelected
     );
-    console.log("solarPanelConfig ", solarPanelConfig);
+    
     const solarData: SolarData = {
       annualConsumption: dto.annualConsumption,
       yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.95,

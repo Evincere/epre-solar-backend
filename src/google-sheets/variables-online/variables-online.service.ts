@@ -99,17 +99,9 @@ export class VariablesOnlineService {
           ? (this.parseFloatWithFormat(rows[2][1]) / tipoCambioArs) * (1 + economicas.IVA)
           : this.parseFloatWithFormat(rows[2][1]) / tipoCambioArs,
         mantenimiento: this.parseFloatWithFormat(rows[4][1]),
-        costoDeMantenimientoInicialUsd: this.parseFloatWithFormat(rows[5][1]),
+        costoDeMantenimientoInicialUsd: 0,
         inversion: 0,
       };
-      console.log(
-        'this.parseFloatWithFormat(rows[2][1]) ',
-        this.parseFloatWithFormat(rows[2][1]),
-      );
-      console.log(
-        '(this.parseFloatWithFormat(rows[2][1])/ tipoCambioArs) * (1 + economicas.IVA) ',
-        (this.parseFloatWithFormat(rows[2][1]) / tipoCambioArs) * (1 + economicas.IVA),
-      );
 
       return inversionYCostos;
     } catch (error) {
