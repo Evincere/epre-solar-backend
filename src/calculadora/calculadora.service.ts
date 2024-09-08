@@ -5,6 +5,7 @@ import { DatosTecnicos } from './datos-tecnicos/datos-tecnicos';
 import { EcoFin } from './eco-fin/eco-fin';
 import { Resultados } from './resultados/resultados';
 import { SolarCalculationDto } from 'src/solar/dto/solar-calculation.dto';
+import { Parametros } from 'src/interfaces/sheets/parametros/parametros.interface';
 
 @Injectable()
 export class CalculadoraService {
@@ -65,14 +66,18 @@ export class CalculadoraService {
       solarData,
       solarCalculationWithParameters,
     );
-
+    const parametros: Parametros = solarCalculationWithParameters.parametros;
+    parametros.inversionCostos.mantenimiento = periodoVeinteanalCostoMantenimiento[0].costoUsd;
+    
     return {
       solarData,
+      parametros,
       periodoVeinteanalGeneracionFotovoltaica,
       periodoVeinteanalFlujoEnergia,
       periodoVeinteanalFlujoIngresosMonetarios,
       periodoVeinteanalEmisionesGEIEvitadas,
       periodoVeinteanalProyeccionTarifas,
+      periodoVeinteanalCostoMantenimiento,
       resultadosFinancieros: {
         casoConCapitalPropio: this.resultadosFinancieros.casoConCapitalPropio,
         indicadoresFinancieros:

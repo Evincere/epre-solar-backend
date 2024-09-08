@@ -119,7 +119,7 @@ export class EcoFin {
 
   getCostoMantenimiento() {
     const periodoVeinteanal: CostoMantenimiento[] = [];
-
+    
     periodoVeinteanal.push({
       year: this.actualYear,
       costoUsd: this.costoMantenimientoUsd,
@@ -151,15 +151,11 @@ export class EcoFin {
       panelsSelected * solarData.panels.panelCapacityW;
     const costoEquipoMedicionUsd =
       dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
-    console.log(
-      costoUsdWp,
-      solarData.panels.panelCapacityW,
-      panelsSelected,
-      costoEquipoMedicionUsd,
-    );
+   
     const inversionInicial =
       costoUsdWp * instalacionCapacityW + costoEquipoMedicionUsd;
     this.dto.parametros.inversionCostos.inversion = inversionInicial;
+    this.dto.parametros.inversionCostos.costoDeMantenimientoInicialUsd = inversionInicial * 0.01;
     return inversionInicial;
   }
 }

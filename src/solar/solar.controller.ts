@@ -46,7 +46,7 @@ export class SolarController {
         const resultados = await this.solarService.calculateSolarSavings(
           solarCalculationWithParameters,
         );
-
+        
         res.status(200).json(resultados); // Enviar resultados con código 200
       } else {
         this.handleOfflineCase(res);
