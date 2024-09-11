@@ -5,6 +5,7 @@ import { CalculadoraService } from 'src/calculadora/calculadora.service';
 import { SolarData } from 'src/interfaces/solar-data/solar-data.interface';
 import { PanelConfig } from 'src/interfaces/panel-config/panel-config.interface';
 import { ResultadosDto } from 'src/interfaces/resultados-dto/resultados-dto.interface';
+import { YearlyAnualConfigurations } from 'src/interfaces/yearly-anual-configurations/yearly-anual-configurations.interface';
 
 @Injectable()
 export class SolarService {
@@ -43,7 +44,6 @@ export class SolarService {
   async calculateSolarSavings(
     dto: SolarCalculationDto,
   ): Promise<any> {
-    // console.log(dto);
 
     const { latitude, longitude } = this.calculateCentroid(
       dto.polygonCoordinates,
@@ -51,13 +51,14 @@ export class SolarService {
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
     
-    
+       
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,
       dto.panelsSupported,
       dto.panelsSelected
     );
-    
+    const yearlysAnualConfigurations: YearlyAnualConfigurations[] = solarDataApi.solarPotential.solarPanelConfigs;
+
     const solarData: SolarData = {
       annualConsumption: dto.annualConsumption,
       yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.95,
@@ -70,6 +71,7 @@ export class SolarService {
           height: solarDataApi.solarPotential.panelHeightMeters,
           width: solarDataApi.solarPotential.panelWidthMeters,
         },
+        yearlysAnualConfigurations
       },
       carbonOffsetFactorKgPerMWh:
         solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
