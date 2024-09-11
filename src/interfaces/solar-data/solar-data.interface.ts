@@ -1,4 +1,5 @@
 import { TarifaCategoria } from "src/tarifa-categoria/tarifa-categoria-enum"
+import { YearlyAnualConfigurations } from "../yearly-anual-configurations/yearly-anual-configurations.interface"
 
 export interface SolarData {
     annualConsumption: number,
@@ -12,7 +13,7 @@ export interface SolarData {
             height: number,
             width: number
         },
-        
+        yearlysAnualConfigurations: YearlyAnualConfigurations[]
     }
     carbonOffsetFactorKgPerMWh: number,
     tarifaCategory: TarifaCategoria,

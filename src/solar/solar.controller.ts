@@ -41,8 +41,6 @@ export class SolarController {
           await this.sheetsService.addParametersToSolarCalculationDto(
             solarCalculationDto,
           );
-          console.log("solarCalculationWithParameters ", solarCalculationWithParameters.parametros.cuadroTarifarioActual);
-          
         const resultados = await this.solarService.calculateSolarSavings(
           solarCalculationWithParameters,
         );
