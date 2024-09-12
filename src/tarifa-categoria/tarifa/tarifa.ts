@@ -50,7 +50,7 @@ export class Tarifa {
       const cuadro = tarifarioActual.find((tarifa) => {
         return tarifa.nombre == this.categoria;
       });
-      // console.log(cuadro);
+      console.log(cuadro);
 
       if (cuadro) {
         return {
