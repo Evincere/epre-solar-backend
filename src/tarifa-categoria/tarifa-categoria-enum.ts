@@ -8,7 +8,8 @@ export enum TarifaCategoria {
   T2_SMP = 'T2-SMP',
   T2_CMP = 'T2-CMP',
   T3_BT = 'T3-BT',
-  T3_MT_13_2_KV = 'T3-MT-13.2-KV',
-  T3_MT_33_KV = 'T3-MT-33-KV',
+  T3_MT_13_2_KV = 'T3-MT 13.2R',
+  T3_MT_33_KV = 'T3-MT 33-KV',
   TRA_SD = 'TRA-SD',
+  
 }
