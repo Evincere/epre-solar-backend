@@ -11,18 +11,18 @@ export class Tarifa {
   private static readonly cargosPorCategoria: {
     [key in TarifaCategoria]: { consumo: number; inyeccion: number };
   } = {
-    [TarifaCategoria.T1_G1]: { consumo: 77.51, inyeccion: 54.22 },
-    [TarifaCategoria.T1_G2]: { consumo: 80.5, inyeccion: 55.0 },
-    [TarifaCategoria.T1_G3]: { consumo: 85.75, inyeccion: 57.25 },
-    [TarifaCategoria.T1_R1]: { consumo: 90.0, inyeccion: 60.0 },
-    [TarifaCategoria.T1_R2]: { consumo: 95.0, inyeccion: 65.0 },
-    [TarifaCategoria.T1_R3]: { consumo: 100.0, inyeccion: 70.0 },
-    [TarifaCategoria.T2_CMP]: { consumo: 70.0, inyeccion: 50.0 },
-    [TarifaCategoria.T2_SMP]: { consumo: 70.0, inyeccion: 50.0 },
-    [TarifaCategoria.T3_BT]: { consumo: 70.0, inyeccion: 50.0 },
-    [TarifaCategoria.T3_MT_13_2_KV]: { consumo: 70.0, inyeccion: 50.0 },
-    [TarifaCategoria.T3_MT_33_KV]: { consumo: 70.0, inyeccion: 50.0 },
-    [TarifaCategoria.TRA_SD]: { consumo: 70.0, inyeccion: 50.0 },
+    [TarifaCategoria.T1_G1]: { consumo: 74.90652, inyeccion: 74.90652 },
+    [TarifaCategoria.T1_G2]: { consumo: 74.90652, inyeccion: 74.90652 },
+    [TarifaCategoria.T1_G3]: { consumo: 74.90652, inyeccion: 74.90652 },
+    [TarifaCategoria.T1_R1]: { consumo: 74.86879, inyeccion: 74.86879 },
+    [TarifaCategoria.T1_R2]: { consumo: 74.86879, inyeccion: 74.86879 },
+    [TarifaCategoria.T1_R3]: { consumo: 74.86879, inyeccion: 74.86879 },
+    [TarifaCategoria.T2_CMP]: { consumo: 74.85091, inyeccion: 74.85091 },
+    [TarifaCategoria.T2_SMP]: { consumo: 74.85091, inyeccion: 74.85091 },
+    [TarifaCategoria.T3_BT]: { consumo: 74.804549, inyeccion: 74.804549 },
+    [TarifaCategoria.T3_MT_13_2_KV]: { consumo: 68.8040826, inyeccion: 68.8040826 },
+    [TarifaCategoria.T3_MT_33_KV]: { consumo: 68.8040826, inyeccion: 68.8040826 },
+    [TarifaCategoria.TRA_SD]: { consumo: 71.72011625, inyeccion: 71.72011625 },
   };
 
   constructor(
@@ -50,9 +50,10 @@ export class Tarifa {
       const cuadro = tarifarioActual.find((tarifa) => {
         return tarifa.nombre == this.categoria;
       });
-      console.log(cuadro);
 
       if (cuadro) {
+        console.log("cuadro tarifario ", cuadro);
+        
         return {
           consumo: cuadro.cargoVariableConsumoArsKWh,
           inyeccion: cuadro.cargoVariableInyeccionArsKWh,
