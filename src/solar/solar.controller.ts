@@ -44,8 +44,9 @@ export class SolarController {
         const resultados = await this.solarService.calculateSolarSavings(
           solarCalculationWithParameters,
         );
+        // console.log("resultados ", resultados.solarData.panels.yearlysAnualConfigurations);
         
-        res.status(200).json(resultados); // Enviar resultados con código 200
+        res.status(200).json(resultados); 
       } else {
         this.handleOfflineCase(res);
       }

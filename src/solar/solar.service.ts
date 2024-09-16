@@ -11,7 +11,7 @@ import { YearlyAnualConfigurations } from 'src/interfaces/yearly-anual-configura
 export class SolarService {
   constructor(private readonly calculadoraService: CalculadoraService) {}
 
-  async getSolarData(latitude: number, longitude: number): Promise<any> {
+  /* async getSolarData(latitude: number, longitude: number): Promise<any> {
     if (isNaN(latitude) || isNaN(longitude)) {
       throw new HttpException(
         'Invalid coordinates received',
@@ -39,29 +39,96 @@ export class SolarService {
         );
       }
     }
+  } */
+
+  async getSolarData(latitude: number, longitude: number): Promise<any> {
+    // Verifica si las coordenadas son válidas
+    if (isNaN(latitude) || isNaN(longitude)) {
+      throw new HttpException(
+        'Invalid coordinates received',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const apiKey = process.env.GOOGLE_API_KEY;
+
+    // Prepara los parámetros de la consulta
+    const args = {
+      'location.latitude': latitude.toFixed(5), // Redondea a 5 decimales
+      'location.longitude': longitude.toFixed(5),
+    };
+
+    // Crea los parámetros de la URL usando URLSearchParams
+    const params = new URLSearchParams({ ...args, key: apiKey });
+
+    const url = `https://solar.googleapis.com/v1/buildingInsights:findClosest?${params}`;
+
+    try {
+      // Realiza la petición utilizando fetch
+      const response = await fetch(url, {
+        method: 'GET',
+        cache: 'no-cache', 
+        headers: {
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache',
+          'Accept-Encoding': 'gzip, deflate, br' 
+        }
+      });
+
+      // Verifica si la respuesta es exitosa
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new HttpException(
+            'Location out of coverage',
+            HttpStatus.BAD_REQUEST,
+          );
+        } else {
+          const errorContent = await response.json(); // Obtiene el contenido del error
+          console.error('Error fetching data from API:', errorContent);
+          throw new HttpException(
+            `An error occurred while fetching data: ${errorContent.error.message}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }
+    
+      // Si la respuesta es exitosa, convierte los datos a JSON
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching data from API:', error.message);
+      throw new HttpException(
+        `An error occurred: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  async calculateSolarSavings(
-    dto: SolarCalculationDto,
-  ): Promise<any> {
-
+  async calculateSolarSavings(dto: SolarCalculationDto): Promise<any> {
     const { latitude, longitude } = this.calculateCentroid(
       dto.polygonCoordinates,
     );
 
     const solarDataApi = await this.getSolarData(latitude, longitude);
-    
-       
+
     const solarPanelConfig: PanelConfig = this.calculatePanelConfig(
       solarDataApi.solarPotential,
       dto.panelsSupported,
-      dto.panelsSelected
+      dto.panelsSelected,
     );
-    const yearlysAnualConfigurations: YearlyAnualConfigurations[] = solarDataApi.solarPotential.solarPanelConfigs;
 
+    const yearlysAnualConfigurations = solarDataApi.solarPotential.solarPanelConfigs.map(
+      (item: any) => {
+        return {
+          panelsCount: item.panelsCount,
+          yearlyEnergyDcKwh: item.yearlyEnergyDcKwh,
+        };
+      },
+    );
+    
     const solarData: SolarData = {
       annualConsumption: dto.annualConsumption,
-      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * 0.95,
+      yearlyEnergyAcKwh: solarPanelConfig.yearlyEnergyDcKwh * dto.parametros.caracteristicasSistema.eficienciaInstalacion,
       panels: {
         panelsCountApi: solarPanelConfig.panelsCount,
         maxPanelsPerSuperface: dto.panelsSupported,
@@ -71,7 +138,7 @@ export class SolarService {
           height: solarDataApi.solarPotential.panelHeightMeters,
           width: solarDataApi.solarPotential.panelWidthMeters,
         },
-        yearlysAnualConfigurations
+        yearlysAnualConfigurations,
       },
       carbonOffsetFactorKgPerMWh:
         solarDataApi.solarPotential.carbonOffsetFactorKgPerMwh,
@@ -110,7 +177,9 @@ export class SolarService {
   }
 
   private calculatePanelConfig(
-solarPotential: { solarPanelConfigs: any; }, panelsSupported: number, panelsSelected?: number,
+    solarPotential: { solarPanelConfigs: any },
+    panelsSupported: number,
+    panelsSelected?: number,
   ): PanelConfig {
     if (panelsSupported < 4) {
       panelsSupported = 4;
