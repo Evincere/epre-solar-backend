@@ -1,10 +1,10 @@
 {
   "name": "solar-app-backend",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "description": "",
-  "author": "",
+  "author": "Semper Evincere",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "",
   "scripts": {
     "build": "nest build",
     "postbuild": "node postbuild.js",
@@ -30,8 +30,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.1",
-    "apexcharts": "^3.53.0",
-    "axios": "^1.7.2",
+    "axios": "^1.7.3",
     "dotenv": "^16.4.5",
     "google-auth-library": "^1.6.1",
     "googleapis": "^105.0.0",
@@ -41,6 +40,7 @@
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "solar-app-backend": "file:",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
@@ -49,6 +49,7 @@
     "@nestjs/testing": "^10.0.0",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.12",
+    "@types/multer": "^1.4.12",
     "@types/node": "^20.3.1",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

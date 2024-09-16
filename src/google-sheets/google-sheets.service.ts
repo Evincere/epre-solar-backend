@@ -63,6 +63,7 @@ export class GoogleSheetsService implements OnModuleInit {
         economicas,
         cuadroTarifarioActual,
       };
+      
       const solarCalculationWithParameters: SolarCalculationDto = {
         ...solarCalculationDto,
         parametros: parametrosActuales,

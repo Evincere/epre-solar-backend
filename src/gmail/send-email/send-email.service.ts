@@ -7,7 +7,7 @@ export class MailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail', 
+      service: 'gmail',
       auth: {
         user: 'epresjsolar@gmail.com',
         pass: process.env.PASS_GMAIL,
@@ -15,14 +15,32 @@ export class MailService {
     });
   }
 
-  async sendEmail(to: string, subject: string, html: string) {
+  async sendEmail(
+    to: string,
+    subject: string,
+    htmlContent: string,
+    file?: Express.Multer.File,
+  ) {
+    const transporter = this.transporter;
+
     const mailOptions: nodemailer.Options = {
       from: 'epresjsolar@gmail.com',
       to,
       subject,
-      html,
+      html: htmlContent,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    // Si el archivo está presente, añadirlo como adjunto
+    if (file) {
+      mailOptions.attachments = [
+        {
+          filename: file.originalname,
+          content: file.buffer,
+          contentType: file.mimetype,
+        },
+      ];
+    }
+
+    await transporter.sendMail(mailOptions);
   }
 }

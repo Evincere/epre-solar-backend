@@ -40,7 +40,7 @@ export class VariablesOnlineService {
 
   async getCuadroTarifario(
     googleSheetClient: sheets_v4.Sheets,
-    economicas: Economicas
+    economicas: Economicas,
   ): Promise<CuadroTarifario[]> {
     try {
       const response = await googleSheetClient.spreadsheets.values.get({
@@ -60,10 +60,12 @@ export class VariablesOnlineService {
           cargoVariableConsumoArsKWh: this.parseFloatWithFormat(row[1]),
           cargoVariableInyeccionArsKWh: this.parseFloatWithFormat(row[2]),
           tension: row[3] as CuadroTarifario['tension'],
-          impuestos: row[0].includes('T1-R') ? economicas.impuestosYTasasProvinciales + economicas.IVA : economicas.impuestosYTasasProvinciales,
+          impuestos: row[0].includes('T1-R')
+            ? economicas.impuestosYTasasProvinciales + economicas.IVA
+            : economicas.impuestosYTasasProvinciales,
         };
       });
-
+      
       return cuadroTarifario;
     } catch (error) {
       throw new Error('No se pudieron obtener los cuadros tarifarios.');
@@ -73,7 +75,7 @@ export class VariablesOnlineService {
   async getInversionYCostos(
     googleSheetClient: sheets_v4.Sheets,
     economicas: Economicas,
-    solarCalculationDto: SolarCalculationDto
+    solarCalculationDto: SolarCalculationDto,
   ): Promise<InversionCostos> {
     try {
       const response = await googleSheetClient.spreadsheets.values.get({
@@ -88,7 +90,6 @@ export class VariablesOnlineService {
       }
       const categoriaSeleccionada = solarCalculationDto.categoriaSeleccionada;
       const tipoCambioArs = economicas.tipoCambioArs;
-      console.log(economicas)
       const inversionYCostos: InversionCostos = {
         costoUsdWpConIva: this.parseFloatWithFormat(rows[0][1]),
         costoUsdWpAplicado: categoriaSeleccionada.includes('T1-R')
@@ -96,7 +97,8 @@ export class VariablesOnlineService {
           : this.parseFloatWithFormat(rows[0][1]) / (1 + economicas.IVA),
         equipoDeMedicionArsSinIva: this.parseFloatWithFormat(rows[2][1]),
         equipoDeMedicionUsdAplicado: categoriaSeleccionada.includes('T1-R')
-          ? (this.parseFloatWithFormat(rows[2][1]) / tipoCambioArs) * (1 + economicas.IVA)
+          ? (this.parseFloatWithFormat(rows[2][1]) / tipoCambioArs) *
+            (1 + economicas.IVA)
           : this.parseFloatWithFormat(rows[2][1]) / tipoCambioArs,
         mantenimiento: this.parseFloatWithFormat(rows[4][1]),
         costoDeMantenimientoInicialUsd: 0,
@@ -145,19 +147,27 @@ export class VariablesOnlineService {
     googleSheetClient: sheets_v4.Sheets,
   ): Promise<Economicas> {
     try {
-      const responseEconomicas = await googleSheetClient.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: this.rangeEconomicas,
-      });
-      const responseImpuestos = await googleSheetClient.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: this.rangeImpuestos,
-      });
+      const responseEconomicas =
+        await googleSheetClient.spreadsheets.values.get({
+          spreadsheetId: this.spreadsheetId,
+          range: this.rangeEconomicas,
+        });
+      const responseImpuestos = await googleSheetClient.spreadsheets.values.get(
+        {
+          spreadsheetId: this.spreadsheetId,
+          range: this.rangeImpuestos,
+        },
+      );
 
       const rowsEconomicas = responseEconomicas.data.values;
       const rowsImpuestos = responseImpuestos.data.values;
 
-      if (!rowsEconomicas || rowsEconomicas.length === 0 || !rowsImpuestos || rowsImpuestos.length ===0 ) {
+      if (
+        !rowsEconomicas ||
+        rowsEconomicas.length === 0 ||
+        !rowsImpuestos ||
+        rowsImpuestos.length === 0
+      ) {
         throw new Error('No se encontraron datos en el rango especificado.');
       }
 
@@ -166,7 +176,8 @@ export class VariablesOnlineService {
         tasaInflacionUsd: this.parseFloatWithFormat(rowsEconomicas[1][1]) / 100,
         tasaDescuentoFlujoFondosUsd:
           this.parseFloatWithFormat(rowsEconomicas[2][1]) / 100,
-        impuestosYTasasProvinciales: this.parseFloatWithFormat(rowsImpuestos[0][1]) / 100,
+        impuestosYTasasProvinciales:
+          this.parseFloatWithFormat(rowsImpuestos[0][1]) / 100,
         IVA: this.parseFloatWithFormat(rowsImpuestos[1][1]) / 100,
       };
 

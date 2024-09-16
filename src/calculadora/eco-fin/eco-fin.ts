@@ -9,7 +9,7 @@ import { CostoMantenimiento } from 'src/interfaces/costo-mantenimiento/costo-man
 export class EcoFin {
   private tipoDeCambioArs: number;
   private impuestosProvincialesYTasasMunicipales: number;
-  private costoUsdWpSinIVA: number;
+  private costoUsdWpAplicado: number;
   private costoEquipoMedicionUsd: number;
   private inversionUsd: number;
   private costoMantenimientoUsd: number;
@@ -26,7 +26,7 @@ export class EcoFin {
     this.solarData = solarData;
     this.tipoDeCambioArs = dto.parametros.economicas.tipoCambioArs;
     this.impuestosProvincialesYTasasMunicipales = tarifaCategory.impuestos;
-    this.costoUsdWpSinIVA = dto.parametros.inversionCostos.costoUsdWpAplicado;
+    this.costoUsdWpAplicado = dto.parametros.inversionCostos.costoUsdWpAplicado;
     this.costoEquipoMedicionUsd =
       dto.parametros.inversionCostos.equipoDeMedicionUsdAplicado;
 
