@@ -94,6 +94,7 @@ export class SolarService {
     
       // Si la respuesta es exitosa, convierte los datos a JSON
       const data = await response.json();
+      console.log("DATA OBTENIDA DE LA API SOLAR: ", data)
       return data;
     } catch (error) {
       console.error('Error fetching data from API:', error.message);
@@ -190,6 +191,8 @@ export class SolarService {
       (element: PanelConfig) => element.panelsCount === panelsCount,
     );
     // Si no se encuentra ningún elemento que cumpla con la condición, devuelve null
+    console.log("solarPotential.solarPanelConfigs: ", solarPotential.solarPanelConfigs)
+    console.log("configs encontrada: ", configs[index])
     if (index === -1) {
       return configs[configs.length - 1];
     }

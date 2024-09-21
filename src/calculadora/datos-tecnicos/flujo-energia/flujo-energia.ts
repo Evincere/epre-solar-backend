@@ -18,7 +18,7 @@ export class FlujoEnergia {
         if (this.getEnergiaConsumida() > (this.generacionFotovoltaicaAnual * this.proporcionAutoconsumo)) {
             return this.generacionFotovoltaicaAnual * this.proporcionAutoconsumo;
         }
-        return 0;
+        return this.getEnergiaConsumida();
     }
 
     public getInyectada(): number {
