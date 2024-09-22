@@ -20,5 +20,7 @@ export class SolarCalculationDto {
     @ApiProperty()
     potenciaMaxAsignada: number;
     parametros?: Parametros
+    @ApiProperty()
+    factorPotencia?: number | 1;
   }
   

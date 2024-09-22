@@ -3,11 +3,12 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-
 dotenv.config();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log', 'debug', 'verbose'] });
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
 
   app.enableCors({
     origin: '*',
@@ -25,11 +26,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('/api/docs', app, document, {
     swaggerOptions: {
-      filter: true
-    }
+      filter: true,
+    },
   });
-  // app.useGlobalFilters(new AllExceptionFilter());
-  // app.useGlobalInterceptors(new TimeOutInterceptor());
-  await app.listen(process.env.PORT || 3000);
+  // Usa el puerto asignado por Cloud Run (definido en process.env.PORT) o 3000 para desarrollo local
+  const port = process.env.PORT || 3000;
+
+  await app.listen(port);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
